@@ -26,16 +26,23 @@ def main(file_paths):
     #change freqs, pare down to smaller avgs
     num_cond_freqs = int(((params.time_window / 2) + 1) / params.bin_size)
     
+    #create big tensor to hold all spectra
     #params same for each file, so tensor bigger lengthwise
     #check num freq param is same as time window size
     big_tens = np.zeros((num_time_windows, num_files*num_sensor_groups, num_cond_freqs))
     
-    #indices arrays
-    time_inds = []
+    #data products
     
-    freq_inds = np.zeros(3)
+    #standard deviations for channels per each file
+    n_channels = params.last_channel - params.first_channel + 1
+    ch_stds = np.zeros((n_channels, num_files))
     
-    channel_inds = np.zeros((num_sensor_groups * 2) + 1)
+    #max value for each channel per file
+    ch_maxs = np.zeros((n_channels, num_files))
+    
+    #peak frequency per file
+    peak_freqs = np.zeros(num_files)
+    
     
     #write each of files to cond file
     for i in range(len(file_paths)):
@@ -65,12 +72,74 @@ def main(file_paths):
         c_indx = i * num_sensor_groups
         big_tens[0:t_indx, c_indx:c_indx+spect.shape[1], :] = spect
         
+        #fft of data
+        data_fft = np.abs(condenser.rfft(some_data))
+        
+        #store standard deviations of channels
+        ch_stds[:, i] = np.std(data_fft, axis=0)
+        
+        #store max values of channels
+        ch_maxs[:, i] = np.max(data_fft, axis=0)
+        
+        #store peak frequency
+        #add abs values along freq axis
+        abs_sums = np.sum(data_fft, axis=1)
+        #get max freq index
+        max_ind = np.argmax(abs_sums)
+        #get and store corresponding freq
+        peak_freqs[i] = data_freq[max_ind]
+        
     
-    #add freq info to freq indices array
-    width_freq_bins = nyq_freq / num_cond_freqs 
-    freq_inds[0] = num_cond_freqs           #number of freq bins
-    freq_inds[1] = width_freq_bins          #width of freq bins
-    freq_inds[2] = nyq_freq                 #nyquist frequency
+    #create indices arrays
+
+    channel_inds = ch_ind_array(num_sensor_groups)
+    time_inds = tw_ind_array(fs, num_files)
+    freq_inds = freq_ind_array(nyq_freq, num_cond_freqs)
+    
+    n_files = np.zeros(1)
+    n_files[0] = num_files
+    
+    
+    #test plot
+    clip = np.percentile(np.absolute(big_tens[:,:,10]),95)
+    fig1 = plt.figure()
+    img1 = plt.imshow(big_tens[:,:,10], vmin=0, vmax=clip)
+    plt.colorbar()
+    plt.show(block=True)
+    
+    #CHECK NEW DATA PRODUCTS AND ADD TO SAVE
+    
+    #write indices arrays, data products and tensor to file
+    np.savez(comp_file, n_files=n_files, time_inds=time_inds, freq_inds=freq_inds, channel_inds=channel_inds, big_tens=big_tens)
+    
+    comp_file.close()
+
+
+
+def ch_ind_array(num_sensor_groups):
+    #create 1d array to hold channel information
+    channel_inds = np.zeros((num_sensor_groups * 2) + 1)
+    
+    #add ch info to channel indices array
+    channel_inds[0] = num_sensor_groups       #number of channel groups   
+    #store start and end channel in each group 
+    for k in range(num_sensor_groups):
+        #calculate start and end channel numbers
+        start_channel = k * params.ch_group_size
+        end_channel = start_channel + params.ch_group_size - 1
+        #check for if channel groups not divisible
+        if k == (num_sensor_groups - 1):
+            end_channel = params.last_channel
+        channel_inds[2*k + 1] = start_channel   
+        channel_inds[2*k + 2] = end_channel
+    
+    return channel_inds
+
+
+
+def tw_ind_array(fs, num_files):
+    #create 1d array to hold time information
+    time_inds = []
     
     #add time info to time window indices array
     wind_length = int(params.time_window / fs)    #length of window in secs
@@ -86,33 +155,22 @@ def main(file_paths):
     for j in range(0, total_seconds, wind_length):
         time_inds.append(start_dttime + timedelta(seconds=j))
     
-    #add ch info to channel indices array
-    channel_inds[0] = num_sensor_groups       #number of channel groups   
-    #store start and end channel in each group 
-    for k in range(num_sensor_groups):
-        #calculate start and end channel numbers
-        start_channel = k * params.ch_group_size
-        end_channel = start_channel + params.ch_group_size - 1
-        #check for if channel groups not divisible
-        if k == (num_sensor_groups - 1):
-            end_channel = params.last_channel
-        channel_inds[2*k + 1] = start_channel   
-        channel_inds[2*k + 2] = end_channel
+    return time_inds
     
-    n_files = np.zeros(1)
-    n_files[0] = num_files
+
+
+def freq_ind_array(nyq_freq, num_cond_freqs):
+    #create 1d array to hold frequency information
+    freq_inds = np.zeros(3)
+
+    #add freq info to freq indices array
+    width_freq_bins = nyq_freq / num_cond_freqs 
+    freq_inds[0] = num_cond_freqs           #number of freq bins
+    freq_inds[1] = width_freq_bins          #width of freq bins
+    freq_inds[2] = nyq_freq                 #nyquist frequency
     
-    #test plot
-    clip = np.percentile(np.absolute(big_tens[:,:,10]),95)
-    fig1 = plt.figure()
-    img1 = plt.imshow(big_tens[:,:,10], vmin=0, vmax=clip)
-    plt.colorbar()
-    plt.show(block=True)
-    
-    #write indices arrays and tensor to file
-    np.savez(comp_file, n_files=n_files, time_inds=time_inds, freq_inds=freq_inds, channel_inds=channel_inds, big_tens=big_tens)
-    
-    comp_file.close()
+    return freq_inds
+
 
 
 if __name__ == '__main__':
