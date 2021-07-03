@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import pytz
 import params
+import time
 
 
 def main(file_paths):
@@ -29,7 +30,7 @@ def main(file_paths):
     #create big tensor to hold all spectra
     #params same for each file, so tensor bigger lengthwise
     #check num freq param is same as time window size
-    big_tens = np.zeros((num_time_windows, num_files*num_sensor_groups, num_cond_freqs))
+    big_tens = np.zeros((num_files*num_time_windows, num_sensor_groups, num_cond_freqs))
     
     #data products
     
@@ -55,31 +56,43 @@ def main(file_paths):
         some_data = tdms.get_data(params.first_channel, params.last_channel, params.first_time_sample, params.last_time_sample)
         
         #get fourier corresponding frequency values
+        #after testing peak freq, not needed
         data_freq = condenser.fftfreq(fs, len(some_data))
         
         #calculate number of frequencies to store
-        num_freq = condenser.calc_num_freq(data_freq, num_time_windows)
+        num_freq = condenser.calc_num_freq(len(some_data), num_time_windows)
+        
+        t0 = time.time()
         
         #get condensed matrix
-        spect = condenser.condmatrix(some_data, num_time_windows, params.time_window, num_sensor_groups, params.ch_group_size, params.last_channel, num_freq)
+        spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(some_data, num_time_windows, params.time_window, num_sensor_groups, params.ch_group_size, params.first_channel, params.last_channel, num_freq, nyq_freq)
+        
+        t1 = time.time()
+        print('time to create cond matrix: {0}'.format(t1-t0))
+        
         
         #avg similar frequencies to get smaller number of freq bins and frequencies to store
         spect = spect.reshape(num_time_windows, num_sensor_groups, num_freq // params.bin_size, params.bin_size)
         spect = np.mean(spect, axis=-1)
         
+        t2 = time.time()
+        print('time to bin similar freq: {0}'.format(t2-t1))
+        
+        
         #store spect in tensor
-        t_indx = num_time_windows
-        c_indx = i * num_sensor_groups
-        big_tens[0:t_indx, c_indx:c_indx+spect.shape[1], :] = spect
+        t_indx = i * num_time_windows
+        c_indx = num_sensor_groups
+        big_tens[t_indx:t_indx+spect.shape[0], 0:c_indx, :] = spect
         
         #fft of data
         data_fft = np.abs(condenser.rfft(some_data))
         
         #store standard deviations of channels
-        ch_stds[:, i] = np.std(data_fft, axis=0)
+        #ch_stds[:, i] = np.std(data_fft, axis=0)
         
         #store max values of channels
         ch_maxs[:, i] = np.max(data_fft, axis=0)
+        print(ch_maxs[:, i])
         
         #store peak frequency
         #add abs values along freq axis
@@ -88,13 +101,29 @@ def main(file_paths):
         max_ind = np.argmax(abs_sums)
         #get and store corresponding freq
         peak_freqs[i] = data_freq[max_ind]
-        
+        print(max_ind)
+        print(peak_freqs[i])
     
     #create indices arrays
 
+    t3 = time.time()
+    
     channel_inds = ch_ind_array(num_sensor_groups)
+    
+    t4 = time.time()
+    print('time to create ch ind array: {0}'.format(t4-t3))
+    
+    
     time_inds = tw_ind_array(fs, num_files)
+    
+    t5 = time.time()
+    print('time to create time ind array: {0}'.format(t5-t4))
+    
     freq_inds = freq_ind_array(nyq_freq, num_cond_freqs)
+    
+    t6 = time.time()
+    print('time to create freq ind array: {0}'.format(t6-t5))
+    
     
     n_files = np.zeros(1)
     n_files[0] = num_files
@@ -103,8 +132,11 @@ def main(file_paths):
     #test plot
     clip = np.percentile(np.absolute(big_tens[:,:,10]),95)
     fig1 = plt.figure()
-    img1 = plt.imshow(big_tens[:,:,10], vmin=0, vmax=clip)
+    img1 = plt.imshow(big_tens[:,:,10], vmin=0, vmax=clip, aspect='auto')
     plt.colorbar()
+    plt.title('4/26/19 20:54-58')
+    plt.ylabel('Time Window')
+    plt.xlabel('Channel Group')
     plt.show(block=True)
     
     #CHECK NEW DATA PRODUCTS AND ADD TO SAVE
@@ -136,7 +168,7 @@ def ch_ind_array(num_sensor_groups):
     return channel_inds
 
 
-
+#CHANGE SECONDS TO MILISEC TO COMPENSATE FOR TW SIZE NOT AN EVEN NUM OF SEC
 def tw_ind_array(fs, num_files):
     #create 1d array to hold time information
     time_inds = []
