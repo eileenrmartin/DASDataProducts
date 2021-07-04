@@ -1,3 +1,19 @@
+""" Combine Files Data Products
+
+This script uses the condenser.py functions to create data products for individual files and save them together into 
+a file. Indices arrays with information about time, channels, and frequency are also saved. When creating the 
+individual spectral tensors similar frequency bins can also be further condensed. A params.py file is needed to 
+define the condenser function parameters. A TDMSReader script (from Silixa) is used to read in original DAS data. 
+
+Functions
+---------
+main - Main function to create bigger tensor and indices arrays and save to file
+ch_ind_array - Create the channel info array
+tw_ind_array - Create the time info array
+freq_ind_array - Create the frequency info array
+
+"""
+
 from tdms_reader import TdmsReader
 import condenser
 import numpy as np
@@ -9,6 +25,15 @@ import time
 
 
 def main(file_paths):
+    """
+    Main function to create a bigger 3D spectral tensor from individual spectral tensors from data 
+    from individual files. The big tensor and indices arrays are saved to a file for the user. 
+    
+    Parameters
+    ----------
+    file_paths : list of strings
+        Strings of filenames of DAS tdms data files to analyze
+    """
 
     #create new file to write compressed data to (change name format for diff file sets?)
     comp_file = open("compdata", "wb")
@@ -149,6 +174,21 @@ def main(file_paths):
 
 
 def ch_ind_array(num_sensor_groups):
+    """
+    Create the array to hold information about channels, including the number of channel groups
+    and the indexes in the original data array of the start and ending channels in each channel group 
+    
+    Parameters
+    ----------
+    num_sensor_groups : int
+        Number of channel groups
+    
+    Returns
+    -------
+    array
+        Channel information
+    """
+
     #create 1d array to hold channel information
     channel_inds = np.zeros((num_sensor_groups * 2) + 1)
     
@@ -170,6 +210,23 @@ def ch_ind_array(num_sensor_groups):
 
 #CHANGE SECONDS TO MILISEC TO COMPENSATE FOR TW SIZE NOT AN EVEN NUM OF SEC
 def tw_ind_array(fs, num_files):
+    """
+    Create the array to hold information about time, including the length of each time window in 
+    seconds and datetime objects holding the starting time in UTC for the start of each time window
+    
+    Parameters
+    ----------
+    fs : int
+        Sampling frequency of original data
+    num_files : int
+        Number of files to combine
+    
+    Returns
+    -------
+    array
+        Time information
+    """
+    
     #create 1d array to hold time information
     time_inds = []
     
@@ -192,6 +249,23 @@ def tw_ind_array(fs, num_files):
 
 
 def freq_ind_array(nyq_freq, num_cond_freqs):
+    """
+    Create the array to hold information about frequency, including the number of frequency bins,
+    the width of each frequency bin in Hz, and the nyquist frequency in Hz. 
+    
+    Parameters
+    ----------
+    nyq_freq : int
+        Nyquist frequency of original data
+    num_cond_freqs : int
+        Number of frequency bins after condensing 
+    
+    Returns
+    -------
+    array
+        Frequency information
+    """
+    
     #create 1d array to hold frequency information
     freq_inds = np.zeros(3)
 
