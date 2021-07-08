@@ -26,5 +26,5 @@ filtered_signal = scipy.signal.lfilter(numerator_coeffs, denominator_coeffs, sig
 plt.plot(time, signal, 'b-', label='signal')
 plt.plot(time, filtered_signal, 'g-', linewidth=2, label='filtered signal')
 plt.legend()
-plt.savefig('figures/lowPass.png')
+plt.savefig('../figures/lowPass.png')
 plt.clf()
