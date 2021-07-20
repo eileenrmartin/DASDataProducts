@@ -307,11 +307,6 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
             #avg together channel groups, np.abs to get rid of complex parts created through fft
             absavgs = np.mean(np.abs(trimmed_arr), axis=1)
             
-            #print(slice_fft)
-            #print(out_idxs)
-            #print(trimmed_arr)
-            #print(absavgs)
-            
             #store in spect[window, group, all frequencies]
             spect[tw, ch, :] = absavgs
             
@@ -320,18 +315,10 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
             
             means[cindex_beg:cindex_end] = mean_slice
             
-            #if tw == 0:
-                #print(mean_slice.shape)
-                #print(means[cindex_beg:cindex_end].shape)
-            #print(mean_slice)
-            
             #calculate and store std dev
             stddev = np.std(np.abs(slice_fft))
             
             std_devs[tw, ch] = stddev
-            
-            #print(np.std(slice_fft))
-            
             
             num_channels = cindex_end - cindex_beg
             
@@ -350,7 +337,7 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
                 #remember peak value for comparison
                 peak_freq_val = abs_sums[max_ind]
                 #get and store corresponding freq
-                #calculate freq in hz - freq is at start of freq bin
+                #calculate freq in hz
                 size_freq_bin = nyq_freq / calc_num_freq(some_data.shape[0], num_time_windows)
                 freq_bin_idx = max_ind + windex
                 peak_freq = freq_bin_idx * size_freq_bin
