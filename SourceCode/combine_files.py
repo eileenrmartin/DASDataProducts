@@ -22,7 +22,22 @@ from datetime import datetime, timedelta
 import pytz
 import params
 import time
+from acq_common import acq_client
 
+def t15_attempt():
+    print("Fetch data from server attempt")
+    
+    client = acq_client.acq_Client()
+    client.connect_to_server("tcp://35.244.67.111:48000")
+    
+    data, md = client.fetch_data_product([-3, -2, -1, 0])
+    print(data.shape)
+    print(md)
+    
+    #from tutorial slides - array.reshape(-1, array[:,:,start_index:end_index].shape[2])
+    output = data.reshape(-1, data.shape[2])
+    print(output.shape)
+    
 
 def main(file_paths):
     """
@@ -45,8 +60,7 @@ def main(file_paths):
     num_sensor_groups = condenser.calc_num_ch_groups(params.first_channel, params.last_channel, params.ch_group_size)
     num_time_windows = condenser.calc_num_time_win(params.first_time_sample, params.last_time_sample,params.time_window)
     
-    fs = 500    #sampling frequency, for now assume constant, read from file
-    nyq_freq = fs / 2   #nyquist freq
+    nyq_freq = params.fs / 2   #nyquist freq
     
     #to combine in one big tensor, store created spect arrays
     #change freqs, pare down to smaller avgs
@@ -83,7 +97,7 @@ def main(file_paths):
         
         #get fourier corresponding frequency values
         #after testing peak freq, not needed
-        data_freq = condenser.fftfreq(fs, len(some_data))
+        data_freq = condenser.fftfreq(params.fs, len(some_data))
         
         #calculate number of frequencies to store
         num_freq = condenser.calc_num_freq(len(some_data), num_time_windows)
@@ -110,7 +124,7 @@ def main(file_paths):
     #create indices arrays
     channel_inds = ch_ind_array(num_sensor_groups)
     
-    time_inds = tw_ind_array(fs, num_files)
+    time_inds = tw_ind_array(params.fs, num_files)
     
     freq_inds = freq_ind_array(nyq_freq, num_cond_freqs)
     
@@ -286,10 +300,15 @@ if __name__ == '__main__':
     
     file_paths = create_file_names()
     
-    #add value checks
-    #num_time_samples = (last_time_sample - first_time_sample) + 1
+    #value checks
+    num_time_samples = (params.last_time_sample - params.first_time_sample) + 1
     
     #check if time window size is multiple of sampling freq and divides evenly number of samples
-    #if ((num_time_samples % time_window) != 0) or   
+    if (num_time_samples % params.time_window) != 0:
+        print("Warning! Time window size does not evenly divide the number of time samples in original data")
+    if (params.time_window % params.fs) != 0:
+        print("Warning! Time window size is not evenly divided by the sampling frequency")
     
-    main(file_paths)
+    t15_attempt()
+    
+    #main(file_paths)
