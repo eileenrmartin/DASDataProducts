@@ -14,13 +14,15 @@ fftfreq - Frequency values of Fourier transformed array
 calc_num_ch_groups - Calculate number of channel groups
 calc_num_time_win - Calculate number of time windows
 calc_num_freq - Calculate number of frequency bins
+mean_time - Calculate the 
+std_dev_time
+max_time
 condmatrix - Create spectral tensor and calculate descriptive statistics
 
 """
 
 import numpy as np
 from scipy import fft
-#from scipy import stats
 import math
 
 
@@ -121,14 +123,15 @@ def calc_num_time_win(first_time_sample, last_time_sample, time_window):
     
     #calculate the total number of time samples, add 1 since indexing starts 0 (last_time_sample - first_time_sample + 1)
     #divide by time window size to get number of windows (even divide)
-    num_time_windows = ((last_time_sample - first_time_sample) + 1)  / time_window
+    num_time_windows = ((last_time_sample - first_time_sample) + 1) / time_window
     num_time_windows = int(num_time_windows)
     return num_time_windows
 
 
 def calc_num_freq(n_time_samples, num_time_windows):
     """
-    Calculate the number of resulting frequency bins given the number of time samples and number of time windows
+    Calculate the number of resulting frequency bins given the number of time samples and number of time windows.
+    The resulting number of frequency bins corresponds to the number that would be found in one time window (not the entire data array).
 
     Parameters
     ----------
@@ -143,9 +146,62 @@ def calc_num_freq(n_time_samples, num_time_windows):
         Number of frequency bins
     """
     
-    #
-    num_freq = int(n_time_samples / num_time_windows) + 1
+    #divide num of time samples by two (using positive frequency bins)
+    num_freq = int((n_time_samples / 2) / num_time_windows) + 1
     return num_freq
+
+def mean_time(some_data):
+    """
+    Calculate the mean of each channel in the time domain (from the original data)
+    
+    Parameters
+    ----------
+    some_data : array
+        2D array of original data, with rows as time samples and columns as channels
+    
+    Returns
+    -------
+    array
+        1D array of length number of channels, containing the mean values for each channel
+    """
+    
+    return np.mean(some_data, axis=0)
+    
+
+def std_dev_time(some_data):
+    """
+    Calculate the standard deviation of each channel in the time domain (original data)
+    
+    Parameters
+    ----------
+    some_data : array
+        2D array of original data, with rows as time samples and columns as channels
+    
+    Returns
+    -------
+    array
+        1D array of length number of channels, containing the standard deviation values for each channel
+    """
+    
+    return np.std(some_data, axis=0)
+
+
+def max_time(some_data):
+    """
+    Calculate the maximum value of each channel in the time domain (original data)
+    
+    Parameters
+    ----------
+    some_data : array
+        2D array of original data, with rows as time samples and columns as channels
+    
+    Returns
+    -------
+    array
+        1D array of length number of channels, containing the standard deviation values for each channel
+    """
+    
+    return np.amax(some_data, axis=0)
 
 
 def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_group_size, first_channel, last_channel, num_freq, nyq_freq):
@@ -190,15 +246,15 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
     #create spectral tensor 3D matrix
     spect = np.zeros((num_time_windows, num_sensor_groups, num_freq))
     
-    
     #create 2D array to hold the std dev calculations for each ch group in time window
     std_devs = np.zeros((num_time_windows, num_sensor_groups))
     
-    #create 2D array to hold the mean value for each ch group in time window
-    means = np.zeros((num_time_windows, num_sensor_groups))
-    
     #calculate the number of channels
     n_channels = last_channel - first_channel + 1
+    
+    #create 1D array to hold the mean value for each channel
+    means = np.zeros(n_channels)
+    
     #create 1D array to hold the max value for each channel
     max_vals = np.zeros(n_channels)
     
@@ -220,7 +276,8 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
             
             #in case remainder channels due to noneven divide 
             if ch == (num_sensor_groups - 1):
-                cindex_end = last_channel
+                #since channel numbers indexing start at 0, add 1 to include last ch in slice
+                cindex_end = last_channel + 1
             
             #get slice in matrix of original data for current time window and channel group
             data_slice = some_data[windex:(windex + time_window), cindex_beg:cindex_end]
@@ -248,44 +305,53 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
             trimmed_arr = np.delete(slice_fft, out_idxs, axis=1)
             
             #avg together channel groups, np.abs to get rid of complex parts created through fft
-            absavgs = np.abs(np.mean(trimmed_arr, axis=1))
-
+            absavgs = np.mean(np.abs(trimmed_arr), axis=1)
+            
+            #print(slice_fft)
+            #print(out_idxs)
+            #print(trimmed_arr)
+            #print(absavgs)
+            
             #store in spect[window, group, all frequencies]
             spect[tw, ch, :] = absavgs
             
-            #calculate and store mean of tw and ch group
-            mean_slice = np.mean(slice_fft)
+            #calculate and store mean of channels
+            mean_slice = np.mean(np.abs(slice_fft), axis=0)
             
-            means[tw, ch] = mean_slice
+            means[cindex_beg:cindex_end] = mean_slice
             
+            #if tw == 0:
+                #print(mean_slice.shape)
+                #print(means[cindex_beg:cindex_end].shape)
             #print(mean_slice)
             
             #calculate and store std dev
-            num_channels = cindex_end - cindex_beg + 1
-            num_observations = time_window * num_channels
-            variance = (np.sum(np.square((slice_fft - mean_slice)))) / (num_observations - 1)
-            stddev = np.sqrt(variance)
+            stddev = np.std(np.abs(slice_fft))
             
             std_devs[tw, ch] = stddev
             
             #print(np.std(slice_fft))
             
+            
+            num_channels = cindex_end - cindex_beg
+            
             #check and store max value for channels
-            maximums = np.max(slice_fft, axis=0)
+            maximums = np.max(np.abs(slice_fft), axis=0)
             for n in range(num_channels):
                 if maximums[n] > max_vals[n + cindex_beg]:
                     max_vals[n + cindex_beg] = maximums[n]
             
             #check and store peak frequency 
             #add abs values along freq axis
-            abs_sums = np.sum(slice_fft, axis=1)
+            abs_sums = np.sum(np.abs(slice_fft), axis=1)
             #get max freq index
             max_ind = np.argmax(abs_sums)
             if abs_sums[max_ind] > peak_freq_val : 
-                #get and store corresponding freq
+                #remember peak value for comparison
                 peak_freq_val = abs_sums[max_ind]
-                #calculate freq in hz
-                size_freq_bin = nyq_freq / some_data.shape[0]
+                #get and store corresponding freq
+                #calculate freq in hz - freq is at start of freq bin
+                size_freq_bin = nyq_freq / calc_num_freq(some_data.shape[0], num_time_windows)
                 freq_bin_idx = max_ind + windex
                 peak_freq = freq_bin_idx * size_freq_bin
         

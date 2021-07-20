@@ -61,14 +61,15 @@ def main(file_paths):
     
     #standard deviations for channels per each file
     n_channels = params.last_channel - params.first_channel + 1
-    ch_stds = np.zeros((n_channels, num_files))
+    ch_stds = np.zeros((num_files, num_time_windows, num_sensor_groups))
+    
+    ch_means = np.zeros((num_files, n_channels))
     
     #max value for each channel per file
-    ch_maxs = np.zeros((n_channels, num_files))
+    ch_maxs = np.zeros((num_files, n_channels))
     
     #peak frequency per file
     peak_freqs = np.zeros(num_files)
-    
     
     #write each of files to cond file
     for i in range(len(file_paths)):
@@ -87,72 +88,35 @@ def main(file_paths):
         #calculate number of frequencies to store
         num_freq = condenser.calc_num_freq(len(some_data), num_time_windows)
         
-        t0 = time.time()
-        
         #get condensed matrix
         spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(some_data, num_time_windows, params.time_window, num_sensor_groups, params.ch_group_size, params.first_channel, params.last_channel, num_freq, nyq_freq)
-        
-        t1 = time.time()
-        print('time to create cond matrix: {0}'.format(t1-t0))
-        
         
         #avg similar frequencies to get smaller number of freq bins and frequencies to store
         spect = spect.reshape(num_time_windows, num_sensor_groups, num_freq // params.bin_size, params.bin_size)
         spect = np.mean(spect, axis=-1)
-        
-        t2 = time.time()
-        print('time to bin similar freq: {0}'.format(t2-t1))
-        
         
         #store spect in tensor
         t_indx = i * num_time_windows
         c_indx = num_sensor_groups
         big_tens[t_indx:t_indx+spect.shape[0], 0:c_indx, :] = spect
         
-        #fft of data
-        data_fft = np.abs(condenser.rfft(some_data))
+        #store stats in respective arrays
+        ch_stds[i, :, :] = std_devs
+        ch_means[i, :] = means
+        ch_maxs[i, :] = max_vals
+        peak_freqs[i] = peak_freq
         
-        #store standard deviations of channels
-        #ch_stds[:, i] = np.std(data_fft, axis=0)
-        
-        #store max values of channels
-        ch_maxs[:, i] = np.max(data_fft, axis=0)
-        print(ch_maxs[:, i])
-        
-        #store peak frequency
-        #add abs values along freq axis
-        abs_sums = np.sum(data_fft, axis=1)
-        #get max freq index
-        max_ind = np.argmax(abs_sums)
-        #get and store corresponding freq
-        peak_freqs[i] = data_freq[max_ind]
-        print(max_ind)
-        print(peak_freqs[i])
     
     #create indices arrays
-
-    t3 = time.time()
-    
     channel_inds = ch_ind_array(num_sensor_groups)
-    
-    t4 = time.time()
-    print('time to create ch ind array: {0}'.format(t4-t3))
-    
     
     time_inds = tw_ind_array(fs, num_files)
     
-    t5 = time.time()
-    print('time to create time ind array: {0}'.format(t5-t4))
-    
     freq_inds = freq_ind_array(nyq_freq, num_cond_freqs)
     
-    t6 = time.time()
-    print('time to create freq ind array: {0}'.format(t6-t5))
-    
-    
+    #store number of files 
     n_files = np.zeros(1)
     n_files[0] = num_files
-    
     
     #test plot
     clip = np.percentile(np.absolute(big_tens[:,:,10]),95)
@@ -164,13 +128,11 @@ def main(file_paths):
     plt.xlabel('Channel Group')
     plt.show(block=True)
     
-    #CHECK NEW DATA PRODUCTS AND ADD TO SAVE
-    
     #write indices arrays, data products and tensor to file
-    np.savez(comp_file, n_files=n_files, time_inds=time_inds, freq_inds=freq_inds, channel_inds=channel_inds, big_tens=big_tens)
+    np.savez(comp_file, n_files=n_files, time_inds=time_inds, freq_inds=freq_inds, channel_inds=channel_inds, big_tens=big_tens, 
+        ch_stds=ch_stds, ch_means=ch_means, ch_maxs=ch_maxs, peak_freqs=peak_freqs)
     
     comp_file.close()
-
 
 
 def ch_ind_array(num_sensor_groups):
@@ -208,7 +170,6 @@ def ch_ind_array(num_sensor_groups):
     return channel_inds
 
 
-#CHANGE SECONDS TO MILISEC TO COMPENSATE FOR TW SIZE NOT AN EVEN NUM OF SEC
 def tw_ind_array(fs, num_files):
     """
     Create the array to hold information about time, including the length of each time window in 
@@ -237,7 +198,7 @@ def tw_ind_array(fs, num_files):
     start_hour = params.file_hour_start
     start_min = params.file_min_start
     #start datetime obj of first file
-    start_dttime = datetime(params.file_year, params.file_month, params.file_day, start_hour, start_min, 0, tzinfo=pytz.UTC)   
+    start_dttime = datetime(params.file_year, params.file_month, params.file_day, start_hour, start_min, 0, 0, tzinfo=pytz.UTC)   
     total_seconds = num_files * 60        #total number of seconds in all files
     
     #add datetime start time for each time window
@@ -277,10 +238,16 @@ def freq_ind_array(nyq_freq, num_cond_freqs):
     
     return freq_inds
 
-
-
-if __name__ == '__main__':
-    print("Condensing files attempt")
+def create_file_names():
+    """
+    Create the array of filenames to use for the big tensor, based on the date and time values from the 
+    params file. 
+    
+    Returns
+    -------
+    array
+        File names
+    """
     
     #file path names
     file_paths = []
@@ -310,5 +277,19 @@ if __name__ == '__main__':
         else:
             min_count = 0
             hour_count = hour_count + 1
+    
+    return file_paths
+
+
+if __name__ == '__main__':
+    print("Condensing files attempt")
+    
+    file_paths = create_file_names()
+    
+    #add value checks
+    #num_time_samples = (last_time_sample - first_time_sample) + 1
+    
+    #check if time window size is multiple of sampling freq and divides evenly number of samples
+    #if ((num_time_samples % time_window) != 0) or   
     
     main(file_paths)
