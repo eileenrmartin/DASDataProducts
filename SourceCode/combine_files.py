@@ -1,6 +1,6 @@
 """ Combine Files Data Products
 
-This script uses the condenser.py functions to create data products for individual files and save them together into 
+This script uses the condenser.py functions to create data products for individual tdms files and save them together into 
 a file. Indices arrays with information about time, channels, and frequency are also saved. When creating the 
 individual spectral tensors similar frequency bins can also be further condensed. A params.py file is needed to 
 define the condenser function parameters. A TDMSReader script (from Silixa) is used to read in original DAS data. 
@@ -11,6 +11,7 @@ main - Main function to create bigger tensor and indices arrays and save to file
 ch_ind_array - Create the channel info array
 tw_ind_array - Create the time info array
 freq_ind_array - Create the frequency info array
+combine_data_products - Create big tensor and stat arrays
 
 """
 
@@ -22,21 +23,9 @@ from datetime import datetime, timedelta
 import pytz
 import params
 import time
+from T15 import treble_setup
 from acq_common import acq_client
-
-def t15_attempt():
-    print("Fetch data from server attempt")
     
-    client = acq_client.acq_Client()
-    client.connect_to_server("tcp://35.244.67.111:48000")
-    
-    data, md = client.fetch_data_product([-3, -2, -1, 0])
-    print(data.shape)
-    print(md)
-    
-    #from tutorial slides - array.reshape(-1, array[:,:,start_index:end_index].shape[2])
-    output = data.reshape(-1, data.shape[2])
-    print(output.shape)
     
 
 def main(file_paths):
@@ -55,71 +44,18 @@ def main(file_paths):
     
     #number of files to combine
     num_files = len(file_paths)
-     
+    
     #get number of sensor groups and time windows
     num_sensor_groups = condenser.calc_num_ch_groups(params.first_channel, params.last_channel, params.ch_group_size)
     num_time_windows = condenser.calc_num_time_win(params.first_time_sample, params.last_time_sample,params.time_window)
     
     nyq_freq = params.fs / 2   #nyquist freq
     
-    #to combine in one big tensor, store created spect arrays
     #change freqs, pare down to smaller avgs
     num_cond_freqs = int(((params.time_window / 2) + 1) / params.bin_size)
     
-    #create big tensor to hold all spectra
-    #params same for each file, so tensor bigger lengthwise
-    #check num freq param is same as time window size
-    big_tens = np.zeros((num_files*num_time_windows, num_sensor_groups, num_cond_freqs))
-    
-    #data products
-    
-    #standard deviations for channels per each file
-    n_channels = params.last_channel - params.first_channel + 1
-    ch_stds = np.zeros((num_files, num_time_windows, num_sensor_groups))
-    
-    ch_means = np.zeros((num_files, n_channels))
-    
-    #max value for each channel per file
-    ch_maxs = np.zeros((num_files, n_channels))
-    
-    #peak frequency per file
-    peak_freqs = np.zeros(num_files)
-    
-    #write each of files to cond file
-    for i in range(len(file_paths)):
-        #pull file from list
-        fp = file_paths[i]
-        
-        #get tdms reader
-        tdms = TdmsReader(fp)
-        #read in tdms data - array of time samples x channels
-        some_data = tdms.get_data(params.first_channel, params.last_channel, params.first_time_sample, params.last_time_sample)
-        
-        #get fourier corresponding frequency values
-        #after testing peak freq, not needed
-        data_freq = condenser.fftfreq(params.fs, len(some_data))
-        
-        #calculate number of frequencies to store
-        num_freq = condenser.calc_num_freq(len(some_data), num_time_windows)
-        
-        #get condensed matrix
-        spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(some_data, num_time_windows, params.time_window, num_sensor_groups, params.ch_group_size, params.first_channel, params.last_channel, num_freq, nyq_freq)
-        
-        #avg similar frequencies to get smaller number of freq bins and frequencies to store
-        spect = spect.reshape(num_time_windows, num_sensor_groups, num_freq // params.bin_size, params.bin_size)
-        spect = np.mean(spect, axis=-1)
-        
-        #store spect in tensor
-        t_indx = i * num_time_windows
-        c_indx = num_sensor_groups
-        big_tens[t_indx:t_indx+spect.shape[0], 0:c_indx, :] = spect
-        
-        #store stats in respective arrays
-        ch_stds[i, :, :] = std_devs
-        ch_means[i, :] = means
-        ch_maxs[i, :] = max_vals
-        peak_freqs[i] = peak_freq
-        
+    #get bigger tensor and stats arrays
+    big_tens, ch_stds, ch_means, ch_maxs, peak_freqs = combine_data_products(num_files, num_time_windows, num_sensor_groups, num_cond_freqs, file_paths, nyq_freq)
     
     #create indices arrays
     channel_inds = ch_ind_array(num_sensor_groups)
@@ -132,7 +68,7 @@ def main(file_paths):
     n_files = np.zeros(1)
     n_files[0] = num_files
     
-    #test plot
+    #test plot - move to test/example scrpit
     clip = np.percentile(np.absolute(big_tens[:,:,10]),95)
     fig1 = plt.figure()
     img1 = plt.imshow(big_tens[:,:,10], vmin=0, vmax=clip, aspect='auto')
@@ -213,11 +149,11 @@ def tw_ind_array(fs, num_files):
     start_min = params.file_min_start
     #start datetime obj of first file
     start_dttime = datetime(params.file_year, params.file_month, params.file_day, start_hour, start_min, 0, 0, tzinfo=pytz.UTC)   
-    total_seconds = num_files * 60        #total number of seconds in all files
+    total_microseconds = num_files * 60 * 1000000       #total number of microseconds in all files
     
     #add datetime start time for each time window
-    for j in range(0, total_seconds, wind_length):
-        time_inds.append(start_dttime + timedelta(seconds=j))
+    for j in range(0, total_microseconds, (wind_length * 1000000)):
+        time_inds.append(start_dttime + timedelta(microseconds=j))
     
     return time_inds
     
@@ -252,47 +188,58 @@ def freq_ind_array(nyq_freq, num_cond_freqs):
     
     return freq_inds
 
-def create_file_names():
-    """
-    Create the array of filenames to use for the big tensor, based on the date and time values from the 
-    params file. 
+def combine_data_products(num_files, num_time_windows, num_sensor_groups, num_cond_freqs, file_paths, nyq_freq):
+    #create big tensor to hold all spectra
+    #params same for each file, so tensor bigger lengthwise
+    big_tens = np.zeros((num_files*num_time_windows, num_sensor_groups, num_cond_freqs))
     
-    Returns
-    -------
-    array
-        File names
-    """
+    #data products
     
-    #file path names
-    file_paths = []
+    #standard deviations for channels per each file
+    n_channels = params.last_channel - params.first_channel + 1
+    ch_stds = np.zeros((num_files, num_time_windows, num_sensor_groups))
     
-    #find time difference in file range
-    hour_diff = params.file_hour_end - params.file_hour_start
-    min_diff = 0
-    if params.file_min_end > params.file_min_start:
-        min_diff = params.file_min_end - params.file_min_start
-    else:
-        hour_diff = hour_diff - 1
-        min_diff = (params.file_min_end + 60) - params.file_min_start
+    ch_means = np.zeros((num_files, n_channels))
+    
+    #max value for each channel per file
+    ch_maxs = np.zeros((num_files, n_channels))
+    
+    #peak frequency per file
+    peak_freqs = np.zeros(num_files)
+    
+    #write each of files to cond file
+    for i in range(len(file_paths)):
+        #pull file from list
+        fp = file_paths[i]
+        
+        #get tdms reader
+        tdms = TdmsReader(fp)
+        #read in tdms data - array of time samples x channels
+        some_data = tdms.get_data(params.first_channel, params.last_channel, params.first_time_sample, params.last_time_sample)
+        
+        #calculate number of frequencies to store
+        num_freq = condenser.calc_num_freq(len(some_data), num_time_windows)
+        
+        #get condensed matrix
+        spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(some_data, num_time_windows, params.time_window, num_sensor_groups, params.ch_group_size, params.first_channel, params.last_channel, num_freq, nyq_freq)
+        
+        #avg similar frequencies to get smaller number of freq bins and frequencies to store
+        spect = spect.reshape(num_time_windows, num_sensor_groups, num_freq // params.bin_size, params.bin_size)
+        spect = np.mean(spect, axis=-1)
+        
+        #store spect in tensor
+        t_indx = i * num_time_windows
+        c_indx = num_sensor_groups
+        big_tens[t_indx:t_indx+spect.shape[0], 0:c_indx, :] = spect
+        
+        #store stats in respective arrays
+        ch_stds[i, :, :] = std_devs
+        ch_means[i, :] = means
+        ch_maxs[i, :] = max_vals
+        peak_freqs[i] = peak_freq
+    
+    return big_tens, ch_stds, ch_means, ch_maxs, peak_freqs
 
-    #calc number of files
-    n_files = (hour_diff * 60) + min_diff + 1 
-
-    hour_count = params.file_hour_start
-    min_count = params.file_min_start
-
-    for i in range(n_files):
-        #add filename to list of files
-        name = 'PSUDAS_UTC_' + str(params.file_year) + '{:02}'.format(params.file_month) + '{:02}'.format(params.file_day) + '_' + '{:02}'.format(hour_count) + '{:02}'.format(min_count) + '43.415.tdms'
-        file_paths.append(name)
-        #increment minutes and hour if applicable
-        if min_count < 59:
-            min_count = min_count + 1 
-        else:
-            min_count = 0
-            hour_count = hour_count + 1
-    
-    return file_paths
 
 
 if __name__ == '__main__':

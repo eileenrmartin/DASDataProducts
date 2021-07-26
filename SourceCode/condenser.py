@@ -11,12 +11,13 @@ Functions
 
 rfft - Real discrete Fourier transform of 2D array
 fftfreq - Frequency values of Fourier transformed array
+calc_nyq_freq - Calculate the nyquist frequency
 calc_num_ch_groups - Calculate number of channel groups
 calc_num_time_win - Calculate number of time windows
 calc_num_freq - Calculate number of frequency bins
-mean_time - Calculate the 
-std_dev_time
-max_time
+mean_time - Calculate the mean of each channel in time domain
+std_dev_time - Calculate the std deviation of each channel in time domain
+max_time - Calculate the max value of each channel in time domain
 condmatrix - Create spectral tensor and calculate descriptive statistics
 
 """
@@ -69,6 +70,22 @@ def fftfreq(fs, n_time):
     data_freq = fft.rfftfreq(n_time, d=(1./fs))
     return data_freq
 
+def calc_nyq_freq(dT):
+    """
+    Calculate the nyquist freq from a given dt value
+    
+    Parameters
+    ----------
+    dT : float
+        Spacing between time samples
+    
+    Returns
+    -------
+    float
+        Nyquist frequency
+    """
+    
+    return (1 / dT) / 2
 
 def calc_num_ch_groups(first_channel, last_channel, ch_group_size):
     """
@@ -102,7 +119,7 @@ def calc_num_ch_groups(first_channel, last_channel, ch_group_size):
 def calc_num_time_win(first_time_sample, last_time_sample, time_window):
     """
     Calculate the number of condensed time windows given a window size and number of time samples
-    
+   
     Number of time samples should be evenly divisible by the time window size.
     Time window size should be multiple of sampling frequency. 
     
@@ -125,6 +142,7 @@ def calc_num_time_win(first_time_sample, last_time_sample, time_window):
     #divide by time window size to get number of windows (even divide)
     num_time_windows = ((last_time_sample - first_time_sample) + 1) / time_window
     num_time_windows = int(num_time_windows)
+
     return num_time_windows
 
 
@@ -147,6 +165,7 @@ def calc_num_freq(n_time_samples, num_time_windows):
     """
     
     #divide num of time samples by two (using positive frequency bins)
+    
     num_freq = int((n_time_samples / 2) / num_time_windows) + 1
     return num_freq
 
@@ -268,7 +287,10 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
         #iterate through n ch groups
         for ch in range(num_sensor_groups):
             #calculate index in original data matrix of beginning time sample of current time window
-            windex = tw * time_window
+            windex_beg = tw * time_window
+            #calculate index in original data matrix of end time sample of current time window
+            windex_end = windex_beg + time_window
+            
             #calculate index in original matrix of beginning channel of current channel group
             cindex_beg = ch * ch_group_size
             #calculate index in original matrix of end channel of current channel group
@@ -280,7 +302,7 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
                 cindex_end = last_channel + 1
             
             #get slice in matrix of original data for current time window and channel group
-            data_slice = some_data[windex:(windex + time_window), cindex_beg:cindex_end]
+            data_slice = some_data[windex_beg:windex_end, cindex_beg:cindex_end]
             
             #take fft of slice of original data
             slice_fft = rfft(data_slice)
@@ -339,7 +361,7 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
                 #get and store corresponding freq
                 #calculate freq in hz
                 size_freq_bin = nyq_freq / calc_num_freq(some_data.shape[0], num_time_windows)
-                freq_bin_idx = max_ind + windex
+                freq_bin_idx = max_ind + windex_beg
                 peak_freq = freq_bin_idx * size_freq_bin
         
     return spect, std_devs, means, max_vals, peak_freq

@@ -19,10 +19,12 @@ last_channel = 2431
 #num of time samples: 30000, indexes 0 - 29999
 first_time_sample = 0
 last_time_sample = 29999
+#sampling frequency
+fs = 500    
 
 #size of channels and time windows to group together
 ch_group_size = 100
-#few secs at a time, must be divisible by 500 (sampling rate) - otherwise change timedate, and still must be div by 2
+#few secs at a time, must be divisible by 500 (sampling rate) - and still must be div by 2
 #num time samples must be divisible by time_window
 time_window = 1000 
 
