@@ -5,6 +5,8 @@ import condenser
 import numpy as np
 
 class TestCond(unittest.TestCase):
+    def test_calc_nyq_freq(self):
+        self.assertEqual(condenser.calc_nyq_freq(0.002), 250, "Should be 250 Hz")
 
     def test_calc_num_ch_groups(self):
         self.assertEqual(condenser.calc_num_ch_groups(1, 10, 1), 10, "Should be 10 channel groups")
@@ -87,7 +89,7 @@ class TestCond(unittest.TestCase):
         
         self.assertTrue(np.array_equal(max_vals, test_maxs), "Maximum values should be 2")
         
-        #check peak_frequency
+        #check peak_frequency - change func? returns beg of freq bin
         self.assertEqual(peak_freq, 5.0, "Peak freq should be 5.0")
         
 

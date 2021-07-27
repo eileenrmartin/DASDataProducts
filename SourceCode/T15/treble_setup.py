@@ -13,14 +13,11 @@ def setup_server():
     
     return client
 
-def get_data(client):
+def get_data(client, n_frames):
     #determine number of frames to fetch from dt?
-    data, md = client.fetch_data_product([-3, -2, -1, 0])
+    data, md = client.fetch_data_product(list(range(-n_frames+1, 1)))
     print(data.shape)
-    print(md)
-    
     #from tutorial slides - array.reshape(-1, array[:,:,start_index:end_index].shape[2])
     output = data.reshape(-1, data.shape[2])
-    print(output.shape)
     
-    return output
+    return output, md

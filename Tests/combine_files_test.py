@@ -52,17 +52,6 @@ class TestCond(unittest.TestCase):
         self.assertEqual(freq_ind[1], (250/167), "Should be about 1.497 Hz")
         #last value is nyquist freq
         self.assertEqual(freq_ind[2], 250, "Should be 250 Hz")
-    
-    def test_create_file_names(self):
-        file_paths = combine_files.create_file_names()
-        
-        self.assertEqual(file_paths[0], 'PSUDAS_UTC_20190426_205443.415.tdms', "Should be 54 min")
-        self.assertEqual(file_paths[1], 'PSUDAS_UTC_20190426_205543.415.tdms', "Should be 55 min")
-        self.assertEqual(file_paths[2], 'PSUDAS_UTC_20190426_205643.415.tdms', "Should be 56 min")
-        self.assertEqual(file_paths[3], 'PSUDAS_UTC_20190426_205743.415.tdms', "Should be 57 min")
-        self.assertEqual(file_paths[4], 'PSUDAS_UTC_20190426_205843.415.tdms', "Should be 58 min")
-    
-    def test_main():
 
 if __name__ == '__main__':
     unittest.main()

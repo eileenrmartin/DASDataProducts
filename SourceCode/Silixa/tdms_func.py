@@ -198,7 +198,7 @@ def combine_data_products(num_files, num_time_windows, num_sensor_groups, num_co
     
     #create big tensor to hold all spectra
     #params same for each file, so tensor bigger lengthwise
-    big_tens = np.zeros((num_files*num_time_windows, num_sensor_groups, num_cond_freqs))
+    big_tens = np.zeros((num_files * num_time_windows, num_sensor_groups, num_cond_freqs))
     
     #data products
     

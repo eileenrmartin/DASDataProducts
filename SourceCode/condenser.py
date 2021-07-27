@@ -334,8 +334,8 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
             
             #calculate and store mean of channels
             mean_slice = np.mean(np.abs(slice_fft), axis=0)
-            
             means[cindex_beg:cindex_end] = mean_slice
+
             
             #calculate and store std dev
             stddev = np.std(np.abs(slice_fft))

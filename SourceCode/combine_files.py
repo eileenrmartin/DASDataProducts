@@ -15,14 +15,12 @@ combine_data_products - Create big tensor and stat arrays
 
 """
 
-from tdms_reader import TdmsReader
 import condenser
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import pytz
 import params
-import time
 from T15 import treble_setup
 from acq_common import acq_client
     
@@ -239,7 +237,6 @@ def combine_data_products(num_files, num_time_windows, num_sensor_groups, num_co
         peak_freqs[i] = peak_freq
     
     return big_tens, ch_stds, ch_means, ch_maxs, peak_freqs
-
 
 
 if __name__ == '__main__':
