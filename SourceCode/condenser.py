@@ -360,8 +360,7 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
                 #get and store corresponding freq
                 #calculate freq in hz
                 size_freq_bin = nyq_freq / num_freq
-                freq_bin_idx = max_ind + windex_beg
-                peak_freq = freq_bin_idx * size_freq_bin
-        
+                peak_freq = max_ind * size_freq_bin
+    
     return spect, std_devs, means, max_vals, peak_freq
     
