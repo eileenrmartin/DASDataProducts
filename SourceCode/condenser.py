@@ -335,7 +335,6 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
             #calculate and store mean of channels
             mean_slice = np.mean(np.abs(slice_fft), axis=0)
             means[cindex_beg:cindex_end] = mean_slice
-
             
             #calculate and store std dev
             stddev = np.std(np.abs(slice_fft))
@@ -360,7 +359,7 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
                 peak_freq_val = abs_sums[max_ind]
                 #get and store corresponding freq
                 #calculate freq in hz
-                size_freq_bin = nyq_freq / (num_time_windows*time_window)
+                size_freq_bin = nyq_freq / num_freq
                 freq_bin_idx = max_ind + windex_beg
                 peak_freq = freq_bin_idx * size_freq_bin
         
