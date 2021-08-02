@@ -175,5 +175,3 @@ def save_file(filename):
     hf.attrs['dx'] = dx                                         #dx value
     
     hf.close()
-    
-    
