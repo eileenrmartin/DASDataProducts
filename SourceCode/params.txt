@@ -1,0 +1,6 @@
+parameter file setup for save_data_prod.py: 
+line 4 is the number of channels in each channel group (int), line 5 is the number of frames in each time window (int), line 6 is path to save hdf data product files (string)
+
+100
+10
+.

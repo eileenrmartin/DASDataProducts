@@ -18,7 +18,6 @@ import matplotlib.pyplot as plt
 import tdms_params as tp
 import tdms_func
 
-    
 
 def main(file_paths):
     """
@@ -47,7 +46,7 @@ def main(file_paths):
     num_cond_freqs = int(((tp.time_window / 2) + 1) / tp.bin_size)
     
     #get bigger tensor and stats arrays
-    big_tens, ch_stds, ch_means, ch_maxs, peak_freqs = tdms_func.combine_data_products(num_files, num_time_windows, num_sensor_groups, num_cond_freqs, file_paths, nyq_freq)
+    big_tens, ch_stds, ch_means, ch_maxs, peak_freqs, means_t, stds_t, maxs_t = tdms_func.combine_data_products(num_files, num_time_windows, num_sensor_groups, num_cond_freqs, file_paths, nyq_freq)
     
     #create indices arrays
     channel_inds = tdms_func.ch_ind_array(num_sensor_groups)
@@ -59,16 +58,6 @@ def main(file_paths):
     #store number of files 
     n_files = np.zeros(1)
     n_files[0] = num_files
-    
-    #test plot - move to test/example scrpit
-    clip = np.percentile(np.absolute(big_tens[:,:,10]),95)
-    fig1 = plt.figure()
-    img1 = plt.imshow(big_tens[:,:,10], vmin=0, vmax=clip, aspect='auto')
-    plt.colorbar()
-    plt.title('4/26/19 20:54-58')
-    plt.ylabel('Time Window')
-    plt.xlabel('Channel Group')
-    plt.savefig("data.png")
     
     #write indices arrays, data products and tensor to file
     np.savez(comp_file, n_files=n_files, time_inds=time_inds, freq_inds=freq_inds, channel_inds=channel_inds, big_tens=big_tens, 

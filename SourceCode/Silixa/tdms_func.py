@@ -214,6 +214,11 @@ def combine_data_products(num_files, num_time_windows, num_sensor_groups, num_co
     #peak frequency per file
     peak_freqs = np.zeros(num_files)
     
+    #times
+    stds_t = np.zeros((num_files, n_channels))
+    means_t = np.zeros((num_files, n_channels))
+    maxs_t = np.zeros((num_files, n_channels))
+    
     #write each of files to cond file
     for i in range(len(file_paths)):
         #pull file from list
@@ -244,5 +249,9 @@ def combine_data_products(num_files, num_time_windows, num_sensor_groups, num_co
         ch_means[i, :] = means
         ch_maxs[i, :] = max_vals
         peak_freqs[i] = peak_freq
+        
+        means_t[i, :] = condenser.mean_time(some_data)
+        stds_t[i, :] = condenser.std_dev_time(some_data)
+        maxs_t[i, :] = condenser.max_time(some_data)
     
-    return big_tens, ch_stds, ch_means, ch_maxs, peak_freqs
+    return big_tens, ch_stds, ch_means, ch_maxs, peak_freqs, means_t, stds_t, maxs_t
