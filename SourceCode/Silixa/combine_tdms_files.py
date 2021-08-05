@@ -36,9 +36,14 @@ def main(file_paths):
     #number of files to combine
     num_files = len(file_paths)
     
+    #number of channels
+    n_channels = tp.last_channel - tp.first_channel + 1
+    #number of time samples
+    n_time_samp = tp.last_time_sample - tp.first_time_sample + 1
+    
     #get number of sensor groups and time windows
-    num_sensor_groups = condenser.calc_num_ch_groups(tp.first_channel, tp.last_channel, tp.ch_group_size)
-    num_time_windows = condenser.calc_num_time_win(tp.first_time_sample, tp.last_time_sample, tp.time_window)
+    num_sensor_groups = condenser.calc_num_ch_groups(n_channels, tp.ch_group_size)
+    num_time_windows = condenser.calc_num_time_win(n_time_samp , tp.time_window)
     
     nyq_freq = tp.fs / 2   #nyquist freq
     

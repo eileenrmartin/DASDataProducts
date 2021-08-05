@@ -24,7 +24,6 @@ import params
 from T15 import treble_setup
 from acq_common import acq_client
     
-    
 
 def main(file_paths):
     """

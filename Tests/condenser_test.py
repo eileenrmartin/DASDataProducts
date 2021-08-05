@@ -9,12 +9,12 @@ class TestCond(unittest.TestCase):
         self.assertEqual(condenser.calc_nyq_freq(0.002), 250, "Should be 250 Hz")
 
     def test_calc_num_ch_groups(self):
-        self.assertEqual(condenser.calc_num_ch_groups(1, 10, 1), 10, "Should be 10 channel groups")
-        self.assertEqual(condenser.calc_num_ch_groups(0, 2431, 100), 25, "Should be 25 channel groups")
+        self.assertEqual(condenser.calc_num_ch_groups(10, 1), 10, "Should be 10 channel groups")
+        self.assertEqual(condenser.calc_num_ch_groups(2432, 100), 25, "Should be 25 channel groups")
 
     def test_calc_num_time_win(self):
-        self.assertEqual(condenser.calc_num_time_win(1, 10, 1), 10, "Should be 10 time windows")
-        self.assertEqual(condenser.calc_num_time_win(0, 29999, 1000), 30, "Should be 30 time windows")
+        self.assertEqual(condenser.calc_num_time_win(10, 1), 10, "Should be 10 time windows")
+        self.assertEqual(condenser.calc_num_time_win(30000, 1000), 30, "Should be 30 time windows")
     
     def test_calc_num_freq(self):
         self.assertEqual(condenser.calc_num_freq(10, 1), 6, "Should be 6 frequencies")
@@ -66,7 +66,7 @@ class TestCond(unittest.TestCase):
         
         n_freq = condenser.calc_num_freq(len(data), 5)
         
-        spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(data, 5, 2, 4, 2, 0, 7, n_freq, 10)
+        spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(data, 5, 2, 4, 2, 7, n_freq, 10)
         
         test_spect = np.zeros((5, 4, 2))
         test_spect[:, :, 1] = 2

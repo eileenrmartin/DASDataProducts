@@ -19,13 +19,11 @@ mean_time - Calculate the mean of each channel in time domain
 std_dev_time - Calculate the std deviation of each channel in time domain
 max_time - Calculate the max value of each channel in time domain
 condmatrix - Create spectral tensor and calculate descriptive statistics
-
 """
 
 import numpy as np
 from scipy import fft
 import math
-
 
 
 def rfft(some_data):
@@ -87,16 +85,14 @@ def calc_nyq_freq(dT):
     
     return (1 / dT) / 2
 
-def calc_num_ch_groups(first_channel, last_channel, ch_group_size):
+def calc_num_ch_groups(n_channels, ch_group_size):
     """
     Calculate the number of condensed channel groups given a group size and number of channels
     
     Parameters
     ----------
-    first_channel : int
-        Index of the first channel in the data
-    last_channel : int
-        Index of the last channel in the data
+    n_channels : int
+        Number of channels in data
     ch_group_size : int
         Number of channels per group
     
@@ -108,15 +104,15 @@ def calc_num_ch_groups(first_channel, last_channel, ch_group_size):
     
     #calculate the total number of channels, add 1 since indexing starts 0 (last_channel - first_channel + 1)
     #divide by group size to get number of groups and take the floor to get the nearest low int
-    num_sensor_groups = ((last_channel - first_channel) + 1) / ch_group_size
+    num_sensor_groups = n_channels / ch_group_size
     num_sensor_groups = math.floor(num_sensor_groups)
     #if not an even divide of total sensors by channel groups, add 1 to create one more channel group to include any remainder channels 
-    if ((last_channel - first_channel) + 1) % ch_group_size != 0:
+    if n_channels % ch_group_size != 0:
         num_sensor_groups += 1
     
     return num_sensor_groups
 
-def calc_num_time_win(first_time_sample, last_time_sample, time_window):
+def calc_num_time_win(n_time_samples, time_window):
     """
     Calculate the number of condensed time windows given a window size and number of time samples
    
@@ -125,10 +121,8 @@ def calc_num_time_win(first_time_sample, last_time_sample, time_window):
     
     Parameters
     ----------
-    first_time_sample : int
-        Index of the first time sample in the data
-    last_time_sample : int
-        Index of the last time sample in the data
+    n_time_samples : int
+        Number of time samples in the data
     time_window : int
         Number of time samples per window
     
@@ -140,7 +134,7 @@ def calc_num_time_win(first_time_sample, last_time_sample, time_window):
     
     #calculate the total number of time samples, add 1 since indexing starts 0 (last_time_sample - first_time_sample + 1)
     #divide by time window size to get number of windows (even divide)
-    num_time_windows = ((last_time_sample - first_time_sample) + 1) / time_window
+    num_time_windows = n_time_samples / time_window
     num_time_windows = int(num_time_windows)
 
     return num_time_windows
@@ -223,7 +217,7 @@ def max_time(some_data):
     return np.amax(some_data, axis=0)
 
 
-def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_group_size, first_channel, last_channel, num_freq, nyq_freq):
+def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_group_size, last_channel, num_freq, nyq_freq):
     """
     Create and fill a 3D spectral tensor composed of condensed Fourier transformed data from an original 2D data array
     and calculate descriptive statistics (standard deviation, mean, maxiumums, peak frequency)
@@ -246,8 +240,6 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
         Number of channel groups for data
     ch_group_size : int
         Number of channels per channel group
-    first_channel : int
-        Index of first channel in data
     last_channel : int
         Index of last channel in data
     num_freq : int
@@ -269,7 +261,7 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
     std_devs = np.zeros((num_time_windows, num_sensor_groups))
     
     #calculate the number of channels
-    n_channels = last_channel - first_channel + 1
+    n_channels = last_channel + 1
     
     #create 1D array to hold the mean value for each channel
     means = np.zeros(n_channels)
@@ -332,9 +324,9 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
             #store in spect[window, group, all frequencies]
             spect[tw, ch, :] = absavgs
             
-            #calculate and store mean of channels
-            mean_slice = np.mean(np.abs(slice_fft), axis=0)
-            means[cindex_beg:cindex_end] = mean_slice
+            #calculate and store sum of channels for mean calc
+            sum_slice = np.sum(np.abs(slice_fft), axis=0)
+            means[cindex_beg:cindex_end] += sum_slice
             
             #calculate and store std dev
             stddev = np.std(np.abs(slice_fft))
@@ -361,6 +353,9 @@ def condmatrix(some_data, num_time_windows, time_window, num_sensor_groups, ch_g
                 #calculate freq in hz
                 size_freq_bin = nyq_freq / num_freq
                 peak_freq = max_ind * size_freq_bin
+    
+    #calculate means of channels
+    means = means / some_data.shape[0]
     
     return spect, std_devs, means, max_vals, peak_freq
     

@@ -237,7 +237,7 @@ def combine_data_products(num_files, num_time_windows, num_sensor_groups, num_co
         num_freq = condenser.calc_num_freq(len(some_data), num_time_windows)
         
         #get condensed matrix
-        spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(some_data, num_time_windows, tp.time_window, num_sensor_groups, tp.ch_group_size, tp.first_channel, tp.last_channel, num_freq, nyq_freq)
+        spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(some_data, num_time_windows, tp.time_window, num_sensor_groups, tp.ch_group_size, tp.last_channel, num_freq, nyq_freq)
         
         #avg similar frequencies to get smaller number of freq bins and frequencies to store
         spect = spect.reshape(num_time_windows, num_sensor_groups, num_freq // tp.bin_size, tp.bin_size)
