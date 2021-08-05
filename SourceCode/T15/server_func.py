@@ -58,6 +58,32 @@ def get_data(client, n_frames):
     
     return output, md
 
+def param_data(filename):
+    """
+    Get and return information from parameter file
+    
+    Parameters
+    ----------
+    filename : string
+        Name of parameter file
+    
+    Returns
+    -------
+    tuple
+        Parameters in given file (number of channels in each ch group, number of frames in each time window, path to save to) 
+    """
+    
+    fp = open(filename, "r")
+    #read first three lines (explanatory info)
+    lines = [line.rstrip() for line in fp]
+    
+    ch_group_size = int(lines[3])   #number of channels in each ch group
+    tw_frames = int(lines[4])       #number of frames in each time window
+    file_path = lines[5]            #path to save hdf file
+    
+    fp.close()
+    
+    return ch_group_size, tw_frames, file_path
 
 def save_file(filename):
     """
@@ -70,23 +96,13 @@ def save_file(filename):
         Name of parameter file
     """
     
-    fp = open(filename, "r")
-    #read first three lines (explanatory info)
-    lines = [line.rstrip() for line in fp]
-    
-    ch_group_size = int(lines[3])   #number of channels in each ch group
-    tw_frames = int(lines[4])     #number of frames in each time window
-    file_path = lines[5]
-    
-    fp.close()
+    ch_group_size, tw_frames, file_path = param_data(filename)
     
     #set up connection to server
     client = setup_server()
     
     #fetch one frame to get metadata values
     output, md = get_data(client, 1)
-    print(output.shape)
-    print(md)
     
     samp_per_frame = md['nT']       #number of time samples per frame
     n_channels = md['nx']           #number of channels
@@ -102,7 +118,10 @@ def save_file(filename):
     #determine number of frames to fetch from dt
     #seconds * samples/sec * frame/samples
     n_frames = int(60 * samp_rate * (1 / samp_per_frame))
-    #add few frames to account for fetching md?
+    
+    #check if tw_frames size divides evenly number of frames
+    if (n_frames % tw_frames) != 0:
+        print("Warning! Time window size ({0}) does not evenly divide the number of frames ({1}) in original data".format(tw_frames, n_frames))
     
     #get a minute of reshaped data (2D, time samples by channels)
     
@@ -110,15 +129,6 @@ def save_file(filename):
     output, md = get_data(client, 140)
 
     num_time_samples = output.shape[0]
-
-    #size of time window
-    #num of time samples per tw must be div by 2
-    
-    #value checks
-    
-    #check if tw_frames size divides evenly number of frames
-    #if (num_time_samples % time_window) != 0:
-    #    print("Warning! Time window size does not evenly divide the number of time samples in original data")
 
     #calculate number of time windows
     first_time_sample = 0

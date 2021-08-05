@@ -15,8 +15,8 @@ sys.path.insert(1, '..')
 import condenser
 import numpy as np
 import matplotlib.pyplot as plt
-import tdms_params as tp
-import tdms_func
+from Silixa import tdms_params as tp
+from Silixa import tdms_func
 
 
 def main(file_paths):
@@ -51,7 +51,7 @@ def main(file_paths):
     #create indices arrays
     channel_inds = tdms_func.ch_ind_array(num_sensor_groups)
     
-    time_inds = tdms_func.tw_ind_array(tp.fs, num_files)
+    time_inds = tdms_func.tw_ind_array(tp.fs, num_files, num_time_windows)
     
     freq_inds = tdms_func.freq_ind_array(nyq_freq, num_cond_freqs)
     

@@ -1,8 +1,7 @@
 import unittest
 import sys
 sys.path.insert(1, '../SourceCode')
-import condenser
-import combine_files
+from Silixa import tdms_func
 import numpy as np
 from datetime import datetime, timedelta
 import pytz
@@ -11,7 +10,7 @@ class TestCond(unittest.TestCase):
     
     def test_ch_ind_array(self):
         
-        ch_ind = combine_files.ch_ind_array(25)
+        ch_ind = tdms_func.ch_ind_array(25)
         
         #first index should be the number of groups
         self.assertEqual(ch_ind[0], 25, "Should be 25 channel groups")
@@ -30,10 +29,13 @@ class TestCond(unittest.TestCase):
                 self.assertEqual(ch_ind[2*i + 2], (i * g_size) + (g_size - 1), "Checking end index of channel group")
     
     def test_tw_ind_array(self):
-        tw_ind = combine_files.tw_ind_array(500, 5)
+        tw_ind = tdms_func.tw_ind_array(500, 5, 10)
         
         #first index is length of window in seconds
         self.assertEqual(tw_ind[0], 2, "Should be two seconds")
+        
+        #next index is number of time windows
+        self.assertEqual(tw_ind[1], 10, "Should be 10")
         
         #next are datetimes of starting time at each time window
         
@@ -41,10 +43,10 @@ class TestCond(unittest.TestCase):
         start_dttime = datetime(2019, 4, 26, 20, 54, 0, 0, tzinfo=pytz.UTC)
         
         for j in range(30 * 5):
-            self.assertTrue(tw_ind[j + 1] == start_dttime + timedelta(seconds=(j * 2)), "Check datetime of start of timewindow")
+            self.assertTrue(tw_ind[j + 2] == start_dttime + timedelta(seconds=(j * 2)), "Check datetime of start of timewindow")
     
     def test_freq_ind_array(self): 
-        freq_ind = combine_files.freq_ind_array(250, 167)
+        freq_ind = tdms_func.freq_ind_array(250, 167)
         
         #first value is number of freq bins
         self.assertEqual(freq_ind[0], 167, "Should be 167 freq bins")

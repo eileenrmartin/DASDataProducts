@@ -3,4 +3,4 @@ line 4 is the number of channels in each channel group (int), line 5 is the numb
 
 100
 10
-.
+/mnt/c/Users/saman/Documents/DASDataProducts/SourceCode/

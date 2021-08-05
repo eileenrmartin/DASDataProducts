@@ -17,11 +17,11 @@ combine_data_products - Create big tensor and stat arrays
 
 import sys
 sys.path.insert(1, '..')
-from tdms_reader import TdmsReader
+from Silixa.tdms_reader import TdmsReader
 import condenser
 import numpy as np
 import matplotlib.pyplot as plt
-import tdms_params as tp
+from Silixa import tdms_params as tp
 from datetime import datetime, timedelta
 import pytz
 
@@ -104,7 +104,7 @@ def ch_ind_array(num_sensor_groups):
     return channel_inds
 
 
-def tw_ind_array(fs, num_files):
+def tw_ind_array(fs, num_files, num_time_windows):
     """
     Create the array to hold information about time, including the length of each time window in 
     seconds and datetime objects holding the starting time in UTC for the start of each time window
@@ -115,6 +115,8 @@ def tw_ind_array(fs, num_files):
         Sampling frequency of original data
     num_files : int
         Number of files to combine
+    num_time_windows : int
+        Number of time windows 
     
     Returns
     -------
@@ -128,6 +130,8 @@ def tw_ind_array(fs, num_files):
     #add time info to time window indices array
     wind_length = int(tp.time_window / fs)    #length of window in secs
     time_inds.append(wind_length)
+    time_inds.append(num_time_windows)        #number of time windows
+    
     #add datetime objs of UTC start time of windows
     start_hour = tp.file_hour_start
     start_min = tp.file_min_start
