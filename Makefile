@@ -6,7 +6,6 @@ downloadVirtualTrebleServer:
 	wget terra15.com.au/download/latestlinuxapi_cp38_v3.whl --content-disposition
 	pip install acq_server-3.16.3-cp38-cp38-linux_x86_64.whl
 
+lowpass:
+	python3 SourceCode/lowpass.py
 
-#Setup T15 Acquisition server - Not working
-setupT15Server:
-	python SourceCode/T15/ServerSetup.py
