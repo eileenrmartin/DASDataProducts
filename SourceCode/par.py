@@ -5,4 +5,4 @@
 
 ch_group_size = 100
 min_data = 1
-file_path = "/mnt/c/Users/saman/Documents/DASDataProducts/SourceCode/"
+file_path = "."
