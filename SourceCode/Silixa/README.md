@@ -1,1 +1,1 @@
-
+Python modules and scripts for reading .tdms format files creating using a Silixa interrogator and software, then calculating and saving data products and statistics. A params file is needed to obtain parameters specific to the .tdms file data. 
