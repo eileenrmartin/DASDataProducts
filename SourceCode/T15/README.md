@@ -1,1 +1,1 @@
-
+Python modules for interacting with Terra15 Treble servers and calculating and saving data products to an hdf5 file. The .whl acq_server program from Terra15 must be installed to be able to use acq_client functions. 
