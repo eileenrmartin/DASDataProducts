@@ -15,6 +15,7 @@ save_file - Calculates data products and saves to file
 from acq_common import acq_client
 import condenser
 import numpy as np
+import math
 import time
 import h5py
 
@@ -63,33 +64,6 @@ def get_data(client, n_frames):
     
     return output, md
 
-def param_data(filename):
-    """
-    Get and return information from parameter file
-    
-    Parameters
-    ----------
-    filename : string
-        Name of parameter file
-    
-    Returns
-    -------
-    tuple
-        Parameters in given file (number of channels in each ch group, number of frames in each time window, path to save to) 
-    """
-    
-    fp = open(filename, "r")
-    #read first three lines (explanatory info)
-    lines = [line.rstrip() for line in fp]
-    
-    ch_group_size = int(lines[3])   #number of channels in each ch group
-    tw_frames = int(lines[4])       #number of frames in each time window
-    min_data = int(lines[5])        #number of minutes of data to fetch
-    file_path = lines[6]            #path to save hdf file
-    
-    fp.close()
-    
-    return ch_group_size, tw_frames, min_data, file_path
 
 def save_file(filename):
     """
@@ -102,7 +76,12 @@ def save_file(filename):
         Name of parameter file
     """
     
-    ch_group_size, tw_frames, min_data, file_path = param_data(filename)
+    #get variables from params file from command line
+    module = __import__(filename.replace('.py', ''))
+    
+    ch_group_size = module.ch_group_size
+    min_data = module.min_data
+    file_path = module.file_path
     
     #set up connection to server
     client = setup_server()
@@ -117,27 +96,25 @@ def save_file(filename):
     dx = md['dx']                   #spacing between channels (m)
     dt = md['dT']                   #spacing between time samples (sec)
     
-    #calc time window size (number of samples)
-    time_window = tw_frames * samp_per_frame
-    
     #calc sampling rate
     samp_rate = 1 / dt
     
     #determine number of frames to fetch from dt
     #seconds * samples/sec * frame/samples
-    n_frames = int(min_data * 60 * samp_rate * (1 / samp_per_frame))
+    n_frames = math.ceil(min_data * 60 * samp_rate * (1 / samp_per_frame))
     
-    #check if tw_frames size divides evenly number of frames
-    if (n_frames % tw_frames) != 0:
-        print("Warning! Time window size ({0}) does not evenly divide the number of frames ({1}) in original data".format(tw_frames, n_frames))
+    #check in case n_frames calc is bigger than buffer - testing computer buffer holds max 140 frames
+    n_frames = min(n_frames, 140)
     
-    #get a minute of reshaped data (2D, time samples by channels)
+    #set time window size (number of samples) so evenly divisible
+    time_window = samp_per_frame
     
     #get time of grabbing data
     beg_time = time.strftime("%Y_%m_%d-%H_%M_%S_%Z")
-    #output, md = get_data(client, n_frames)
-    output, md = get_data(client, 140)
-    
+    #get a minute of reshaped data (2D, time samples by channels)
+    output, md = get_data(client, n_frames)
+
+    #number of time samples in fetched data
     num_time_samples = output.shape[0]
 
     #calculate number of time windows
@@ -154,6 +131,11 @@ def save_file(filename):
     
     #get condensed matrix and frequency domain stats
     spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(output, num_time_windows, time_window, num_sensor_groups, ch_group_size, n_channels - 1, num_freq, nyq_freq)
+    
+    #avg together every 10 time windows to get smaller number of values to store
+    spect = np.pad(spect.astype(float), ((0, 0 if spect.shape[0] % 10 == 0 else 10 - spect.shape[0] % 10), (0,0), (0,0)), mode='constant', constant_values=np.NaN)
+    spect = spect.reshape(-1, 10, num_sensor_groups, num_freq)
+    spect = np.nanmean(spect, axis=1)
     
     #get time domain stats
     means_t = condenser.mean_time(output)
