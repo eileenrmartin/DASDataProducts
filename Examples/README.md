@@ -1,1 +1,1 @@
-
+Example scripts for running low pass filter calculation example, reading and visualizing .npz files created with SourceCode/Silixa/combine_tdms_files.py containing calculated data products of combined .tdms files created using Silixa formatting, and reading and visualizing hdf5 format files created with SourceCode/save_data_prod.py containing calculated data products from a data stream.
