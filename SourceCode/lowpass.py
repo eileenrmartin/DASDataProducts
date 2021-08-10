@@ -5,25 +5,32 @@ from T15 import server_func
 from scipy.signal import iirfilter, zpk2sos, sosfilt
 import warnings
 import sys
+plt.switch_backend('agg')
 
 def main():
-    plt.switch_backend('agg')
+    
     client = server_func.setup_server();
     data, md = server_func.get_data(client,1);
-    cutoff_freq = 2;
-    sampling_rate = md['dx'];
-    #print(sampling_rate, file = sys.stdout);
-    lowpassData = lowpass(data, cutoff_freq, sampling_rate, 6, zerophase=True);
-    print(md, file = sys.stdout);
+    cutoff_freq = 200;
+    dT = md['dT'];
+    sampling_freq = 1/dT;
+    lowpassData = lowpass(data, cutoff_freq, sampling_freq, 6, zerophase=True);
+    number_of_time_samples = md['nT'];
+    sampling_duration = number_of_time_samples * dT;
+    time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False)
+    plotLowpass(time, data, lowpassData);
+    
 
-def plotLowpass(numSamples,time,signal,filteredSignal):
-    number_of_samples = server_func.calc
-    time = np.linspace(0, sampling_duration, number_of_samples, endpoint=False)
+def plotLowpass(time,signal,filteredSignal):
+    fig = plt.figure(figsize=(7,7))
     plt.plot(time, signal, 'b-', label='signal')
-    plt.plot(time, filtered_signal, 'g-', linewidth=2, label='filtered signal')
-    plt.legend()
-    plt.savefig('../figures/lowPass.png')
-    plt.clf()
+    plt.plot(time, filteredSignal, 'g-', linewidth=2, label='filtered signal')
+    #plt.legend(framealpha=1, frameon=True);
+    plt.rcParams['figure.figsize'] = [10, 10]
+    plt.xlabel("Time");
+    plt.ylabel("Frequency");
+    plt.savefig('figures/lowPass.png')
+    plt.close()
 
 def lowpass(data, freq, df, corners=4, zerophase=False):
     """

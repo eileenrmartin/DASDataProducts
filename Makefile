@@ -7,5 +7,6 @@ downloadVirtualTrebleServer:
 	pip install acq_server-3.16.3-cp38-cp38-linux_x86_64.whl
 
 lowpass:
+	rm figures/lowPass.png
 	python3 SourceCode/lowpass.py
 
