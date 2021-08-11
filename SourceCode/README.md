@@ -1,1 +1,1 @@
-
+Source code of the modules and scripts for calculating and saving data products. Condenser.py contains functions for calculating data products and statistics. Lowpass.py calculates the low pass filtered data. Save_data_prod.py is a script repeatedly called (using cron) to fetch data from a server stream and calculate products and save to files. Param.py is an example parameter file for specifying setup parameters. Code was written using python version 3.8.10, scipy version 1.4.1, and uses Treble acq_server-3.16.3-cp38-cp38-linux_x86_64.whl from Terra15.
