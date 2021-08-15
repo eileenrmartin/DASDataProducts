@@ -7,18 +7,19 @@ import warnings
 import sys
 plt.switch_backend('agg')
 
-def main():
+def runLowpass(cutoffFrequency, filterOrder):
     
     client = server_func.setup_server();
     data, md = server_func.get_data(client,1);
-    cutoff_freq = 200;
+    cutoff_freq = cutoffFrequency;
     dT = md['dT'];
     sampling_freq = 1/dT;
-    lowpassData = lowpass(data, cutoff_freq, sampling_freq, 6, zerophase=True);
+    lowpassData = lowpass(data, cutoff_freq, sampling_freq, filterOrder, zerophase=True);
     number_of_time_samples = md['nT'];
     sampling_duration = number_of_time_samples * dT;
     time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False)
-    plotLowpass(time, data, lowpassData);
+    return (time, data, lowpassData)
+    #plotLowpass(time, data, lowpassData);
     
 
 def plotLowpass(time,signal,filteredSignal):
@@ -68,5 +69,4 @@ def lowpass(data, freq, df, corners=4, zerophase=False):
     else:
         return sosfilt(sos, data)
 
-if __name__ == '__main__':
-    main()
+
