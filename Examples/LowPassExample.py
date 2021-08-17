@@ -9,6 +9,7 @@ import warnings
 plt.switch_backend('agg')
 
 (time,signal,filtered_signal) = lowpass.runLowpass(50,6);
-lowpass.plotLowpass(time,signal,filtered_signal);
-
+lowpass.plotLowpass(time,signal,filtered_signal, 0.0, 0.05);
+#(preAmp, postAmp) = lowpass.testFunc(signal,filtered_signal);
+#lowpass.plotAmplitudeSpectrum(time,preAmp, postAmp);
 
