@@ -13,11 +13,9 @@ Click on the app.
 
 Navigate into the “DASDataProducts” folder by typing 
 
-'''
 
     cd
     
-'''
 
 then a space, followed by the path to the folder. The path to the folder is the same location as the folder 
 that would be followed using the File Explorer. For example, the location in this example system is in the user’s (“saman”) Documents, so the command is 
