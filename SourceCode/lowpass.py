@@ -15,11 +15,12 @@ def runLowpass(cutoffFrequency, filterOrder):
     cutoff_freq = cutoffFrequency;
     dT = md['dT'];
     sampling_freq = 1/dT;
-    lowpassData = lowpass(data, cutoff_freq, sampling_freq, filterOrder, zerophase=True);
+    data_T = np.transpose(data);
+    lowpassData = lowpass(data_T, cutoff_freq, sampling_freq, filterOrder, zerophase=True);
     number_of_time_samples = md['nT'];
     sampling_duration = number_of_time_samples * dT;
     time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False)
-    return (time, data, lowpassData)
+    return (time, data_T, lowpassData)
     
 def testFunc(signal,filteredSignal):
     rfftPre = condenser.rfft(signal);
@@ -37,17 +38,21 @@ def plotAmplitudeSpectrum(time, rfftSignal, rfftFilteredSignal):
     plt.savefig('figures/amplitudeSpectrum.png')
     plt.close()
 
-def plotLowpass(time,signal,filteredSignal,startTime,endTime):
+def plotLowpass(time,signal,filteredSignal,channelNumber,startTime,endTime):
     temp = np.where(time >= startTime);
     first = min(min(temp));
     temp = np.where(time <= endTime);
     last = max(max(temp));
     fig = plt.figure(figsize=(10,10))
-    plt.plot(time[first:last], signal[first:last], 'b-', label='signal')
-    plt.plot(time[first:last], filteredSignal[first:last], 'g-', linewidth=2, label='filtered signal')
+    #print(signal.shape, file=sys.stderr);
+    #print(filteredSignal.shape, file=sys.stderr);
+    #print(signal[first:last,channelNumber], file=sys.stderr);
+    #print(filteredSignal[first:last, channelNumber], file=sys.stderr);
+    plt.plot(time[first:last], signal[first:last,channelNumber], 'b-', label='signal')
+    plt.plot(time[first:last], filteredSignal[first:last, channelNumber], 'g-', label='filtered signal')
     plt.xlabel("Time");
     plt.ylabel("Frequency");
-    plt.savefig('figures/lowPass.png')
+    plt.savefig('figures/lowpassFigure.png')
     plt.close()
 
 def lowpass(data, freq, df, corners=4, zerophase=False):

@@ -1,4 +1,5 @@
 #Runs low pass example with equation specified in file.
 runLowPassExample:
-	python3 LowPassExample.py
+	#rm figures/lowpassFigure.png
+	python3 lowpassEx.py
 
