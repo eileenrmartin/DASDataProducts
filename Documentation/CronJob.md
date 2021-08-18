@@ -96,7 +96,7 @@ If the crontab file needed to be edited, the same file can be accessed by again 
 
     crontab -e
 
-If the time interval needs to be changed, for example have the script run every five minutes as opposed to every minute, the “* * * * *” should be changed to “*/5 * * * *”. 
+If the time interval needs to be changed, for example have the script run every five minutes as opposed to every minute, the “* * * * \*” should be changed to “*/5 * * * *”. 
 
 ### Starting cron
 
