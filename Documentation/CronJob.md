@@ -13,16 +13,12 @@ Click on the app.
 
 Navigate into the “DASDataProducts” folder by typing 
 
-
     cd
-
 
 then a space, followed by the path to the folder. The path to the folder is the same location as the folder that would be followed using the File Explorer. 
 For example, the location in this example system is in the user’s (“saman”) Documents, so the command is 
 
-
     cd Documents/DASDataProducts
-
 
 The location name on the left of the blinking cursor should now display the location of the folder and its name. 
 
@@ -32,33 +28,109 @@ Navigate into the SourceCode folder by typing
 
     cd SourceCode
 
-The files in the directory can be listed with the command “ls -l”. Make sure the file save_data_prod.py is executable by typing the command “chmod +x save_data_prod.py”. 
-To make sure the save_data_prod.py script can be called by cron, the line endings must be changed in the file from Windows format to Unix format. First the package dos2unix must be installed by typing “sudo apt install dos2unix”. Then, type the administrator password and hit enter. 
- 
-After the package is successfully installed, type the command ”dos2unix save_data_prod.py”. The terminal should state the file is being converted with the following message:
- 
+The files in the directory can be listed with the command 
 
-Finding file paths
+    ls -l
 
-To determine the full paths to the files needed for the cron job command, type “realpath save_data_prod.py”. Then type “realpath “ and the name of the parameter file that will be used, in this case named param.py. Copy those paths for adding into the crontab file next. 
- 
- 
+Make sure the file save_data_prod.py is executable by typing the command 
 
-Creating and editing crontab file
+    chmod +x save_data_prod.py
 
-To create the crontab file that will contain the time to submit the jobs and what commands to run, type the command “crontab -e”. If a crontab has not already been created, the user must select an editor. Select “/bin/nano” by entering the corresponding number. 
+To make sure the save_data_prod.py script can be called by cron, the line endings must be changed in the file from Windows format to Unix format. First the package 
+dos2unix must be installed by typing 
+
+    sudo apt install dos2unix
+
+Then, type the administrator password and hit enter. 
+
+![img2](./Images/img2.png)
  
+After the package is successfully installed, type the command 
+
+    dos2unix save_data_prod.py
+
+The terminal should state the file is being converted with the following message:
+
+![img3](./Images/img3.png)
+
+### Finding file paths
+
+To determine the full paths to the files needed for the cron job command, type 
+
+    realpath save_data_prod.py
+
+Then type “realpath “ and the name of the parameter file that will be used, in this case named param.py. Copy those paths for adding into the crontab file next. 
+
+![img4](./Images/img4.png)
+![img5](./Images/img5.png)
+
+### Creating and editing crontab file
+
+To create the crontab file that will contain the time to submit the jobs and what commands to run, type the command 
+
+    crontab -e
+
+If a crontab has not already been created, the user must select an editor. Select “/bin/nano” by entering the corresponding number. 
+
+![img6](./Images/img6.png)
+
 The crontab file will then open. The crontab file heading explains the setup of the cron command. 
- 
-To type the command that will call the python script every minute, move the cursor to a line under the last line of the header, then type “* * * * * “ then the path to the save_data_prod.py file, then space and the path to the python parameter file to use. For example, the command for this example would be “* * * * * /mnt/c/Users/saman/Documents/DASDataProducts/SourceCode/save_data_prod.py /mnt/c/Users/saman/Documents/DASDataProducts/SourceCode/params.py”. 
- 
-Exit the crontab file by typing ctrl + x and type y to save the new file. Then hit enter to accept the file name. The terminal should display “crontab: installing new crontab”. The contents of the file can also be viewed from the terminal by typing the command “crontab -l”.
-If the crontab file needed to be edited, the same file can be accessed by again typing “crontab -e”. If the time interval needs to be changed, for example have the script run every five minutes as opposed to every minute, the “* * * * *” should be changed to “*/5 * * * *”. 
 
-Starting cron
+![img7](./Images/img7.png)
 
-To check the status of cron, type the command “service crond status” for Linux systems or “service cron status” for Debian systems (Ubuntu). To start cron if it is not running, type “service crond start” or “service cron start”. If the user does not have permissions (a message may display stating “cron: can't open or create /var/run/crond.pid: Permission denied” or “[fail]”), use the command “sudo service crond start” or “sudo service cron start”, then type the admin password and enter. Now when checking status, the command to check status should display that cron is running. 
+To type the command that will call the python script every minute, move the cursor to a line under the last line of the header, then type 
 
-Stopping cronjob
+    * * * * * 
 
-To stop the cron program, type “service crond stop” or “service cron stop”. If permissions are denied, add “sudo “ to the beginning of the command and enter the admin password. The specific command to run the save_data_prod.py script can also be commented out in the crontab file by editing it and adding “#” to the beginning of the line. 
+then space and the path to the save_data_prod.py file, then space and the path to the python parameter file to use. For example, the command for this example would be 
+
+    * * * * * /mnt/c/Users/saman/Documents/DASDataProducts/SourceCode/save_data_prod.py /mnt/c/Users/saman/Documents/DASDataProducts/SourceCode/params.py
+
+![img8](./Images/img8.png)
+
+Exit the crontab file by pressing ctrl and x at the same time, and type y to save the new file. Then hit enter to accept the file name. The terminal should display “crontab: installing new crontab”. The contents of the file can also be viewed from the terminal by typing the command 
+
+    crontab -l
+
+If the crontab file needed to be edited, the same file can be accessed by again typing 
+
+    crontab -e
+
+If the time interval needs to be changed, for example have the script run every five minutes as opposed to every minute, the “* * * * *” should be changed to “*/5 * * * *”. 
+
+### Starting cron
+
+To check the status of cron, type the command 
+
+    service crond status
+
+for Linux systems or 
+
+    service cron status
+
+for Debian systems (Ubuntu). To start cron if it is not running, type 
+
+    service crond start
+or 
+
+    service cron start
+
+If the user does not have permissions (a message may display stating “cron: can't open or create /var/run/crond.pid: Permission denied” or “[fail]”), use the command 
+
+    sudo service crond start
+or 
+
+    sudo service cron start 
+
+then type the admin password and enter. Now when checking status, the command to check status should display that cron is running. 
+
+### Stopping cronjob
+
+To stop the cron program, type 
+
+    service crond stop
+or 
+
+    service cron stop
+
+If permissions are denied, add “sudo “ to the beginning of the command and enter the admin password. The specific command to run the save_data_prod.py script can also be commented out in the crontab file by editing it and adding “#” to the beginning of the line. 
