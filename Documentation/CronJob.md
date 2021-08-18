@@ -15,11 +15,18 @@ Navigate into the “DASDataProducts” folder by typing
 
 
     cd
-    
 
-then a space, followed by the path to the folder. The path to the folder is the same location as the folder 
-that would be followed using the File Explorer. For example, the location in this example system is in the user’s (“saman”) Documents, so the command is 
-“cd Documents/DASDataProducts”. The location name on the left of the blinking cursor should now display the location of the folder and its name. 
+
+then a space, followed by the path to the folder. The path to the folder is the same location as the folder that would be followed using the File Explorer. 
+For example, the location in this example system is in the user’s (“saman”) Documents, so the command is 
+
+
+    cd Documents/DASDataProducts
+
+
+The location name on the left of the blinking cursor should now display the location of the folder and its name. 
+
+![img1](./Images/img1.png)
  
 Navigate into the SourceCode folder by typing “cd SourceCode”. The files in the directory can be listed with the command “ls -l”. Make sure the file save_data_prod.py is executable by typing the command “chmod +x save_data_prod.py”. 
 To make sure the save_data_prod.py script can be called by cron, the line endings must be changed in the file from Windows format to Unix format. First the package dos2unix must be installed by typing “sudo apt install dos2unix”. Then, type the administrator password and hit enter. 
