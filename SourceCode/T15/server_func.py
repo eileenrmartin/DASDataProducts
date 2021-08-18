@@ -132,7 +132,7 @@ def save_file(filename):
     #get condensed matrix and frequency domain stats
     spect, std_devs, means, max_vals, peak_freq = condenser.condmatrix(output, num_time_windows, time_window, num_sensor_groups, ch_group_size, n_channels - 1, num_freq, nyq_freq)
     
-    #avg together every 10 time windows to get smaller number of values to store
+    #avg together every 10 time windows to get smaller number of values to store, pad if number of tws are not evenly divided by 10
     spect = np.pad(spect.astype(float), ((0, 0 if spect.shape[0] % 10 == 0 else 10 - spect.shape[0] % 10), (0,0), (0,0)), mode='constant', constant_values=np.NaN)
     spect = spect.reshape(-1, 10, num_sensor_groups, num_freq)
     spect = np.nanmean(spect, axis=1)
