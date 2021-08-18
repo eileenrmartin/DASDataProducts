@@ -28,7 +28,11 @@ The location name on the left of the blinking cursor should now display the loca
 
 ![img1](./Images/img1.png)
  
-Navigate into the SourceCode folder by typing “cd SourceCode”. The files in the directory can be listed with the command “ls -l”. Make sure the file save_data_prod.py is executable by typing the command “chmod +x save_data_prod.py”. 
+Navigate into the SourceCode folder by typing 
+
+    cd SourceCode
+
+The files in the directory can be listed with the command “ls -l”. Make sure the file save_data_prod.py is executable by typing the command “chmod +x save_data_prod.py”. 
 To make sure the save_data_prod.py script can be called by cron, the line endings must be changed in the file from Windows format to Unix format. First the package dos2unix must be installed by typing “sudo apt install dos2unix”. Then, type the administrator password and hit enter. 
  
 After the package is successfully installed, type the command ”dos2unix save_data_prod.py”. The terminal should state the file is being converted with the following message:
