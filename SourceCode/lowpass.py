@@ -2,31 +2,49 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
 from T15 import server_func
+import condenser
 from scipy.signal import iirfilter, zpk2sos, sosfilt
 import warnings
 import sys
 plt.switch_backend('agg')
 
-def main():
+def runLowpass(cutoffFrequency, filterOrder):
     
     client = server_func.setup_server();
     data, md = server_func.get_data(client,1);
-    cutoff_freq = 200;
+    cutoff_freq = cutoffFrequency;
     dT = md['dT'];
     sampling_freq = 1/dT;
-    lowpassData = lowpass(data, cutoff_freq, sampling_freq, 6, zerophase=True);
+    lowpassData = lowpass(data, cutoff_freq, sampling_freq, filterOrder, zerophase=True);
     number_of_time_samples = md['nT'];
     sampling_duration = number_of_time_samples * dT;
     time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False)
-    plotLowpass(time, data, lowpassData);
+    return (time, data, lowpassData)
     
+def testFunc(signal,filteredSignal):
+    rfftPre = condenser.rfft(signal);
+    rfftPost = np.fft.rfft(filteredSignal);
+    print(filteredSignal.shape, file=sys.stderr);
+    print(rfftPost.shape, file=sys.stderr);
+    return (np.abs(rfftPre), np.abs(rfftPost))
 
-def plotLowpass(time,signal,filteredSignal):
-    fig = plt.figure(figsize=(7,7))
-    plt.plot(time, signal, 'b-', label='signal')
-    plt.plot(time, filteredSignal, 'g-', linewidth=2, label='filtered signal')
-    #plt.legend(framealpha=1, frameon=True);
-    plt.rcParams['figure.figsize'] = [10, 10]
+def plotAmplitudeSpectrum(time, rfftSignal, rfftFilteredSignal):
+    fig = plt.figure(figsize=(10,10))
+    plt.plot(time, rfftSignal, 'b-', label='amplitude spectrum of signal')
+    plt.plot(time, rfftFilteredSignal, 'g-', linewidth=2, label='amplituded spectrum of filtered signal')
+    plt.xlabel("Time");
+    plt.ylabel("Amplitude Spectrum of Frequency");
+    plt.savefig('figures/amplitudeSpectrum.png')
+    plt.close()
+
+def plotLowpass(time,signal,filteredSignal,startTime,endTime):
+    temp = np.where(time >= startTime);
+    first = min(min(temp));
+    temp = np.where(time <= endTime);
+    last = max(max(temp));
+    fig = plt.figure(figsize=(10,10))
+    plt.plot(time[first:last], signal[first:last], 'b-', label='signal')
+    plt.plot(time[first:last], filteredSignal[first:last], 'g-', linewidth=2, label='filtered signal')
     plt.xlabel("Time");
     plt.ylabel("Frequency");
     plt.savefig('figures/lowPass.png')
@@ -68,5 +86,4 @@ def lowpass(data, freq, df, corners=4, zerophase=False):
     else:
         return sosfilt(sos, data)
 
-if __name__ == '__main__':
-    main()
+
