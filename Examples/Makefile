@@ -1,5 +1,5 @@
 #Runs low pass example with equation specified in file.
 runLowPassExample:
-	#rm figures/lowpassFigure.png
+	rm -f figures/lowpassFigure.png
 	python3 lowpassEx.py
 

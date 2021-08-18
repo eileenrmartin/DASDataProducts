@@ -50,8 +50,8 @@ def plotLowpass(time,signal,filteredSignal,channelNumber,startTime,endTime):
     #print(filteredSignal[first:last, channelNumber], file=sys.stderr);
     plt.plot(time[first:last], signal[first:last,channelNumber], 'b-', label='signal')
     plt.plot(time[first:last], filteredSignal[first:last, channelNumber], 'g-', label='filtered signal')
-    plt.xlabel("Time");
-    plt.ylabel("Frequency");
+    plt.xlabel("Time (s)");
+    plt.ylabel("Frequency (Hz)");
     plt.savefig('figures/lowpassFigure.png')
     plt.close()
 
