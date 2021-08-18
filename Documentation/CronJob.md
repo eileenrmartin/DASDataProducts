@@ -12,7 +12,9 @@ Open the terminal for the Linux system by clicking on the windows start button a
 Click on the app.
 
 Navigate into the “DASDataProducts” folder by typing 
- cd 
+'''
+    cd
+'''
 then a space, followed by the path to the folder. The path to the folder is the same location as the folder 
 that would be followed using the File Explorer. For example, the location in this example system is in the user’s (“saman”) Documents, so the command is 
 “cd Documents/DASDataProducts”. The location name on the left of the blinking cursor should now display the location of the folder and its name. 
