@@ -1,4 +1,4 @@
-""" Treble Server Setup
+""" Treble Server Setup and Data Calculation 
 
 This module contains functions necessary for setting up the connection to the 
 treble server. Using the connected client, frames of data can be fetched as it 
@@ -88,8 +88,6 @@ def save_file(filename):
     
     #fetch one frame to get metadata values
     output, md = get_data(client, 1)
-    
-    print(md)
     
     samp_per_frame = md['nT']       #number of time samples per frame
     n_channels = md['nx']           #number of channels

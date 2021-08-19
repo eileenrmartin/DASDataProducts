@@ -3,7 +3,7 @@
 This module takes 2D original DAS data of time samples by channels and creates a 3D spectral tensor 
 containing the discrete Fourier transform of the data and condensing it into smaller time windows and
 channel groups. Descriptive statistics for the transformed data are also calculated including standard deviations
-for each time window and channel group combination, means for each time window and channel group, maximum values
+for each time window and channel group combination, means for each channel, maximum values
 for each channel, and peak frequency in Hz. 
 
 Functions
@@ -102,7 +102,6 @@ def calc_num_ch_groups(n_channels, ch_group_size):
         Number of channel groups
     """
     
-    #calculate the total number of channels, add 1 since indexing starts 0 (last_channel - first_channel + 1)
     #divide by group size to get number of groups and take the floor to get the nearest low int
     num_sensor_groups = n_channels / ch_group_size
     num_sensor_groups = math.floor(num_sensor_groups)
@@ -116,8 +115,7 @@ def calc_num_time_win(n_time_samples, time_window):
     """
     Calculate the number of condensed time windows given a window size and number of time samples
    
-    Number of time samples should be evenly divisible by the time window size.
-    Time window size should be multiple of sampling frequency. 
+    Number of time samples should be evenly divisible by the time window size. 
     
     Parameters
     ----------
@@ -132,7 +130,6 @@ def calc_num_time_win(n_time_samples, time_window):
         Number of time windows
     """
     
-    #calculate the total number of time samples, add 1 since indexing starts 0 (last_time_sample - first_time_sample + 1)
     #divide by time window size to get number of windows (even divide)
     num_time_windows = n_time_samples / time_window
     num_time_windows = int(num_time_windows)
