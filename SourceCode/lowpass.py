@@ -21,66 +21,39 @@ def runLowpass(cutoffFrequency, filterOrder):
     number_of_time_samples = md['nT'];
     sampling_duration = number_of_time_samples * dT;
     time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False)
-    
     return (time, data_T, lowpassData, number_of_time_samples, sampling_freq)
 
-def testFunc1(signal,numSamples, signalFreq):
-    yf = rfft(signal);
+def plotAmplitudeSpectrum(signal,filteredSignal,channelNumber,numSamples, signalFreq):
+    signal = np.transpose(signal);
+    filteredSignal = np.transpose(filteredSignal);
+    yf = rfft(signal[:,channelNumber]);
     xf = rfftfreq(numSamples, signalFreq);
-    print(signal.shape, file=sys.stderr);
-    print(yf.shape, file=sys.stderr);
-    print(numSamples, file=sys.stderr);
-    print(signalFreq, file=sys.stderr);
-    plt.plot(xf, np.abs(yf))
+    yf1 = rfft(filteredSignal[:,channelNumber]);
+    plt.plot(xf, np.abs(yf), 'b-', label='amplitude spectrum of signal')
+    plt.plot(xf, np.abs(yf1), 'r-', label='amplitude spectrum of filtered signal')
+    plt.legend();
     plt.xlabel("Frequency (Hz)");
     plt.ylabel("Amplitude");
     plt.savefig('figures/amplitudeSpectrum.png')
     plt.close()
 
-def testFunc(signal,filteredSignal):
-    #signal_T = np.transpose(signal);
-    #filteredSignal_T = np.transpose(filteredSignal);
-    print(signal.shape, file=sys.stderr);
-    print(filteredSignal.shape, file=sys.stderr);
-    rfftPre = np.fft.rfft(signal);
-    rfftPost = np.fft.rfft(filteredSignal);
-    print(np.abs(rfftPre).shape, file=sys.stderr);
-    
-    return (np.abs(rfftPre), np.abs(rfftPost))
 
-def plotAmplitudeSpectrum(time,signalOnChannel,filteredSignalOnChannel, rfftSignal, rfftFilteredSignal, channelNumber, startTime, endTime):
-    #print(signalOnChannel, file=sys.stderr);
-    #print(filteredSignalOnChannel.shape, file=sys.stderr);
-    
-    
-    print(signalOnChannel.shape, file=sys.stderr);
-    print(rfftSignal.shape, file=sys.stderr);
-    plt.plot(signalOnChannel, rfftSignal, 'b-', label='amplitude spectrum of signal')
-    #plt.plot(time, np.transpose(rfftFilteredSignal), 'g-', label='amplituded spectrum of filtered signal')
-    plt.xlabel("Frequency (Hz)");
-    plt.ylabel("Amplitude");
-    plt.savefig('figures/amplitudeSpectrum.png')
-    plt.close()
+
 
 def plotLowpass(time,signal,filteredSignal,channelNumber,startTime,endTime):
     temp = np.where(time >= startTime);
     first = min(min(temp));
     temp = np.where(time <= endTime);
     last = max(max(temp));
-    fig = plt.figure(figsize=(10,10))
-    #print(signal.shape, file=sys.stderr);
-    #print(filteredSignal.shape, file=sys.stderr);
-    #print(signal[first:last,channelNumber], file=sys.stderr);
-    #print(filteredSignal[first:last, channelNumber], file=sys.stderr);
+    fig = plt.figure(figsize=(10,10));
     plt.plot(time[first:last], signal[first:last,channelNumber], 'b-', label='signal')
     plt.plot(time[first:last], filteredSignal[first:last, channelNumber], 'g-', label='filtered signal')
     plt.xlabel("Time (s)");
-    plt.ylabel("Frequency (Hz)");
+    plt.ylabel("Amplitude");
     plt.legend();
     plt.savefig('figures/lowpassFigure.png')
     plt.close()
-    return (signal[first:last,channelNumber], filteredSignal[first:last, channelNumber])
-
+    
 def lowpass(data, freq, df, corners=4, zerophase=False):
     """
     Butterworth-Lowpass Filter.
