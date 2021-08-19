@@ -10,13 +10,16 @@ plt.switch_backend('agg')
 
 cutoffFrequency = 80;
 filterOrder = 4;
-
-(time,signal,filtered_signal) = lowpass.runLowpass(cutoffFrequency,filterOrder);
+#Run lowpass filter
+(time,signal,filtered_signal, num_samples, sample_freq) = lowpass.runLowpass(cutoffFrequency,filterOrder);
 
 channelNumber = 50;
 startTime = 0.10;
 endTime = 0.15;
-lowpass.plotLowpass(time,signal,filtered_signal,channelNumber,startTime,endTime);
-#(preAmp, postAmp) = lowpass.testFunc(signal,filtered_signal);
-#lowpass.plotAmplitudeSpectrum(time,preAmp, postAmp);
+
+#Plot lowpass filter on channelNumber
+(signal_on_channel, filtered_signal_on_channel) = lowpass.plotLowpass(time,signal,filtered_signal,channelNumber,startTime,endTime);
+#lowpass.testFunc1(signal_on_channel, num_samples, sample_freq);
+#(signal_rfft, filtered_signal_rfft) = lowpass.testFunc(signal_on_channel,filtered_signal_on_channel);
+#lowpass.plotAmplitudeSpectrum(time,signal_rfft, filtered_signal_rfft,preAmp, postAmp, channelNumber, startTime, endTime);
 
