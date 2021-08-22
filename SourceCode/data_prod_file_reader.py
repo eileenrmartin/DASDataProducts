@@ -31,6 +31,7 @@ if __name__ == '__main__':
     print(list(f.keys()))
     
     #get spectral tensor dataset
+    #note - datasets are specific to hdf5, may need to be cast to numpy array to use in other functions
     spect = f['spectral_tensor']
     
     #example plot of slice at one time window 
@@ -45,16 +46,35 @@ if __name__ == '__main__':
     
     #get time domain statistics 
     time_stats = f['time_domain_stats']
+    #print list of datasets in time domain stats group
     print(list(time_stats.keys()))
     means_t = time_stats['means']
     std_devs_t = time_stats['std_deviations']
     maxs_t = time_stats['maximums']
     
+    print(means_t.shape)
+    #plot means of time domain
+    fig2 = plt.figure()
+    img2 = plt.plot(means_t[:])
+    plt.title('Channel means (time)')
+    plt.ylabel('Mean Intensity')
+    plt.xlabel('Channel #')
+    plt.show(block=False)
+    
     #get freq domain statistics
     freq_stats = f['frequency_domain_stats']
+    #print list of datasets in freq domain stats group
     print(list(freq_stats.keys()))
     means_f = freq_stats['means']
     std_devs_f = freq_stats['std_deviations']
     maxs_f = freq_stats['maximums']
     peak_freq = freq_stats['peak_frequency']
+    
+    #plot means of freq domain
+    fig3 = plt.figure()
+    img3 = plt.plot(means_f[:])
+    plt.title('Channel means (freq)')
+    plt.ylabel('Mean Intensity')
+    plt.xlabel('Channel #')
+    plt.show(block=True)
     
