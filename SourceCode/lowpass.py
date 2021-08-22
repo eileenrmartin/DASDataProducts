@@ -26,17 +26,51 @@ def runLowpass(cutoffFrequency, filterOrder):
 def plotAmplitudeSpectrum(signal,filteredSignal,channelNumber,numSamples, signalFreq):
     signal = np.transpose(signal);
     filteredSignal = np.transpose(filteredSignal);
-    yf = rfft(signal[:,channelNumber]);
+    #print(signal.shape, file=sys.stderr)
+    normalized_signal = np.int16((signal / signal.max()) * 32767)
+    normalized_filtered_signal = np.int16((filteredSignal / filteredSignal.max()) * 32767)
+    #print(normalized_tone.shape, file=sys.stderr)
+    yf1 = rfft(normalized_signal[:,channelNumber]);
     xf = rfftfreq(numSamples, signalFreq);
-    yf1 = rfft(filteredSignal[:,channelNumber]);
-    plt.plot(xf, np.abs(yf), 'b-', label='amplitude spectrum of signal')
-    plt.plot(xf, np.abs(yf1), 'r-', label='amplitude spectrum of filtered signal')
+    yf2 = rfft(normalized_filtered_signal[:,channelNumber]);
+
+    plt.plot(xf, np.abs(yf1), 'b-', label='amplitude spectrum of signal')
     plt.legend();
     plt.xlabel("Frequency (Hz)");
     plt.ylabel("Amplitude");
     plt.savefig('figures/amplitudeSpectrum.png')
     plt.close()
 
+    plt.plot(xf, np.abs(yf2), 'r-', label='amplitude spectrum of filtered signal')
+    plt.legend();
+    plt.xlabel("Frequency (Hz)");
+    plt.ylabel("Amplitude");
+    plt.savefig('figures/amplitudeSpectrumOfFilteredSignal.png')
+    plt.close()
+    
+    plt.plot(xf, np.abs(yf1), 'b-', label='amplitude spectrum of signal')
+    plt.yscale("log");
+    plt.legend();
+    plt.xlabel("Frequency (Hz)");
+    plt.ylabel("Log(Amplitude)");
+    plt.savefig('figures/logAmplitudeSpectrum.png')
+    plt.close()
+
+    plt.plot(xf, np.abs(yf2), 'r-', label='amplitude spectrum of filtered signal')
+    plt.yscale("log");
+    plt.legend();
+    plt.xlabel("Frequency (Hz)");
+    plt.ylabel("Log(Amplitude)");
+    plt.savefig('figures/logAmplitudeSpectrumOfFilteredSignal.png')
+    plt.close()
+
+    plt.magnitude_spectrum(signal[:,channelNumber],Fs=1/signalFreq)
+    plt.savefig('figures/test.png')
+    plt.close()
+
+    plt.magnitude_spectrum(filteredSignal[:,channelNumber],Fs=1/signalFreq)
+    plt.savefig('figures/test1.png')
+    plt.close()
 
 
 
