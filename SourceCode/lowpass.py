@@ -31,17 +31,27 @@ def runLowpass(integerDownsampleFactor, filterOrder):
     return (time, data_T, lowpassData,number_of_time_samples,sampling_duration,sampling_freq)
 
 
-def runDownsample(integerDownsampleFactor,samplingDuration,lowpassData):
-    downsampled_data = scipy.signal.decimate(lowpassData,integerDownsampleFactor);
-    print(len(downsampled_data[0]), file=sys.stderr);
-    newNumSamples = len(downsampled_data[0]);
-    downsampled_time = np.linspace(0,samplingDuration,newNumSamples, endpoint=False);
-    print(len(downsampled_time), file=sys.stderr);
-    return (downsampled_time, downsampled_data)
+def runDownsample(integerDownsampleFactor):
+    client = server_func.setup_server();
+    data, md = server_func.get_data(client,1);
+    dT = md['dT'];
+    sampling_freq = 1/dT;
+    data_T = np.transpose(data);
+    number_of_time_samples = md['nT'];
+    sampling_duration = number_of_time_samples * dT;
+    time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False);
+    
+    downsampled_signal = scipy.signal.decimate(data,integerDownsampleFactor);
+    #print(len(downsampled_signal[0]), file=sys.stderr);
+    print(downsampled_signal.shape, file=sys.stderr);
+    newNumSamples = len(downsampled_signal[0]);
+    downsampled_time = np.linspace(0,sampling_duration,newNumSamples, endpoint=False);
+    #print(len(downsampled_time), file=sys.stderr);
+    return (time,data_T,downsampled_time, downsampled_signal,sampling_freq)
 
-def plotAmplitudeSpectrum(signal,filteredSignal,channelNumber,numSamples, signalFreq):
+def plotAmplitudeSpectrum(signal,downsampledSignal,channelNumber,signalFreq):
     signal = np.transpose(signal);
-    filteredSignal = np.transpose(filteredSignal);
+    downsampledSignal = np.transpose(downsampledSignal);
 
     plt.magnitude_spectrum(signal[:,channelNumber],Fs=signalFreq)
     plt.savefig('figures/ampSpectrum.png')
@@ -49,8 +59,8 @@ def plotAmplitudeSpectrum(signal,filteredSignal,channelNumber,numSamples, signal
     plt.ylabel("Amplitude");
     plt.close()
 
-    plt.magnitude_spectrum(filteredSignal[:,channelNumber],Fs=signalFreq)
-    plt.savefig('figures/ampSpectrumFiltered.png')
+    plt.magnitude_spectrum(downsampledSignal[:,channelNumber],Fs=signalFreq)
+    plt.savefig('figures/ampSpectrumDownsampled.png')
     plt.xlabel("Frequency (Hz)");
     plt.ylabel("Amplitude");
     plt.close()
@@ -61,15 +71,15 @@ def plotAmplitudeSpectrum(signal,filteredSignal,channelNumber,numSamples, signal
     plt.ylabel("Log(Amplitude)");
     plt.close()
 
-    plt.magnitude_spectrum(filteredSignal[:,channelNumber],Fs=signalFreq, scale='dB')
-    plt.savefig('figures/logAmpSpectrumFiltered.png')
+    plt.magnitude_spectrum(downsampledSignal[:,channelNumber],Fs=signalFreq, scale='dB')
+    plt.savefig('figures/logAmpSpectrumDownsampled.png')
     plt.xlabel("Frequency (Hz)");
     plt.ylabel("Log(Amplitude)");
     plt.close()
 
 
 
-def plotLowpass(time,signal,filteredSignal,downsampleTime,downsampledSignal,channelNumber,startTime,endTime):
+def plotLowpass(time,signal,downsampleTime,downsampledSignal,channelNumber,startTime,endTime):
     temp = np.where(time >= startTime);
     first = min(min(temp));
     temp = np.where(time <= endTime);
@@ -82,12 +92,21 @@ def plotLowpass(time,signal,filteredSignal,downsampleTime,downsampledSignal,chan
 
     fig = plt.figure(figsize=(10,10));
     plt.plot(time[first:last], signal[first:last,channelNumber], 'b-', label='signal')
-    plt.plot(time[first:last], filteredSignal[first:last, channelNumber], 'g-', label='filtered signal')
     plt.plot(downsampleTime[first_d:last_d], downsampledSignal[first_d:last_d, channelNumber], 'r-', label='downsampled signal')
     plt.xlabel("Time (s)");
     plt.ylabel("Amplitude");
     plt.legend();
     plt.savefig('figures/lowpassFigure.png')
+    plt.close()
+
+
+    fig = plt.figure(figsize=(10,10));
+    #plt.plot(time[first:last], signal[first:last,channelNumber], 'b-', label='signal')
+    plt.plot(downsampleTime[first_d:last_d], downsampledSignal[first_d:last_d, channelNumber], 'r-', label='downsampled signal')
+    plt.xlabel("Time (s)");
+    plt.ylabel("Amplitude");
+    plt.legend();
+    plt.savefig('figures/lowpassFigureDownsampled.png')
     plt.close()
     
 def lowpass(data, freq, df, corners=4, zerophase=False):

@@ -9,15 +9,17 @@ import warnings
 plt.switch_backend('agg')
 
 filterOrder = 6;
-integerDownsampleFactor = 10;
+integerDownsampleFactor = 5;
 #Run lowpass filter
-(time,signal,filtered_signal,num_samples,sample_duration,sample_freq) = lowpass.runLowpass(integerDownsampleFactor,filterOrder);
-(downsample_time, downsample_signal) = lowpass.runDownsample(integerDownsampleFactor,sample_duration,filtered_signal);
+#(time,signal,filtered_signal,num_samples,sample_duration,sample_freq) = lowpass.runLowpass(integerDownsampleFactor,filterOrder);
+(time, signal, downsample_time, downsample_signal, sample_freq) = lowpass.runDownsample(integerDownsampleFactor);
+#(time,signal,filtered_signal,num_samples,sample_duration,sample_freq) = lowpass.runLowpass(integerDownsampleFactor,filterOrder);
+
 channelNumber = 50;
 startTime = 0.10;
 endTime = 0.15;
 
 #Plot lowpass filter on channelNumber
-lowpass.plotLowpass(time,signal,filtered_signal,downsample_time,downsample_signal,channelNumber,startTime,endTime);
-lowpass.plotAmplitudeSpectrum(signal, filtered_signal, channelNumber, num_samples, sample_freq);
+lowpass.plotLowpass(time,signal,downsample_time,downsample_signal,channelNumber,startTime,endTime);
+lowpass.plotAmplitudeSpectrum(signal, downsample_signal, channelNumber, sample_freq);
 
