@@ -99,15 +99,6 @@ def plotLowpass(time,signal,downsampleTime,downsampledSignal,channelNumber,start
     plt.savefig('figures/lowpassFigure.png')
     plt.close()
 
-
-    fig = plt.figure(figsize=(10,10));
-    #plt.plot(time[first:last], signal[first:last,channelNumber], 'b-', label='signal')
-    plt.plot(downsampleTime[first_d:last_d], downsampledSignal[first_d:last_d, channelNumber], 'r-', label='downsampled signal')
-    plt.xlabel("Time (s)");
-    plt.ylabel("Amplitude");
-    plt.legend();
-    plt.savefig('figures/lowpassFigureDownsampled.png')
-    plt.close()
     
 def lowpass(data, freq, df, corners=4, zerophase=False):
     """

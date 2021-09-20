@@ -8,15 +8,14 @@ from scipy.signal import iirfilter, zpk2sos, sosfilt
 import warnings
 plt.switch_backend('agg')
 
-filterOrder = 6;
-integerDownsampleFactor = 5;
+integerDownsampleFactor = 8;
 #Run lowpass filter
 #(time,signal,filtered_signal,num_samples,sample_duration,sample_freq) = lowpass.runLowpass(integerDownsampleFactor,filterOrder);
 (time, signal, downsample_time, downsample_signal, sample_freq) = lowpass.runDownsample(integerDownsampleFactor);
 #(time,signal,filtered_signal,num_samples,sample_duration,sample_freq) = lowpass.runLowpass(integerDownsampleFactor,filterOrder);
 
 channelNumber = 50;
-startTime = 0.10;
+startTime = 0.05;
 endTime = 0.15;
 
 #Plot lowpass filter on channelNumber
