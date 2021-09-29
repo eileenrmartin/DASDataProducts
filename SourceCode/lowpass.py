@@ -7,10 +7,11 @@ from scipy.signal import iirfilter, zpk2sos, sosfilt, decimate
 import warnings
 from scipy.fft import rfft, rfftfreq
 import sys
+import time
 plt.switch_backend('agg')
 
 
-def runLowpass(integerDownsampleFactor, filterOrder):
+def runLowpassOnly(integerDownsampleFactor, filterOrder):
     
     client = server_func.setup_server();
     data, md = server_func.get_data(client,1);
@@ -31,7 +32,7 @@ def runLowpass(integerDownsampleFactor, filterOrder):
     return (time, data_T, lowpassData,number_of_time_samples,sampling_duration,sampling_freq)
 
 
-def runDownsample(integerDownsampleFactor):
+def runLowpassAndDownsample(integerDownsampleFactor):
     client = server_func.setup_server();
     data, md = server_func.get_data(client,1);
     dT = md['dT'];
@@ -40,13 +41,9 @@ def runDownsample(integerDownsampleFactor):
     number_of_time_samples = md['nT'];
     sampling_duration = number_of_time_samples * dT;
     time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False);
-    
     downsampled_signal = scipy.signal.decimate(data,integerDownsampleFactor);
-    #print(len(downsampled_signal[0]), file=sys.stderr);
-    print(downsampled_signal.shape, file=sys.stderr);
     newNumSamples = len(downsampled_signal[0]);
     downsampled_time = np.linspace(0,sampling_duration,newNumSamples, endpoint=False);
-    #print(len(downsampled_time), file=sys.stderr);
     return (time,data_T,downsampled_time, downsampled_signal,sampling_freq)
 
 def plotAmplitudeSpectrum(signal,downsampledSignal,channelNumber,signalFreq):

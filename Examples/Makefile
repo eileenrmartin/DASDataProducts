@@ -7,4 +7,5 @@ runLowPassExample:
 	rm -f figures/logAmpSpectrum.png
 	rm -f figures/logAmpSpectrumDownsampled.png
 	python3 lowpassEx.py
-
+runTiming:
+	python3 lowpassAndDownsampleTimingEx.py

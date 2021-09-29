@@ -6,13 +6,13 @@ sys.path.insert(1, '../SourceCode')
 import lowpass
 from scipy.signal import iirfilter, zpk2sos, sosfilt
 import warnings
+import time
 plt.switch_backend('agg')
 
 integerDownsampleFactor = 8;
-#Run lowpass filter
-#(time,signal,filtered_signal,num_samples,sample_duration,sample_freq) = lowpass.runLowpass(integerDownsampleFactor,filterOrder);
-(time, signal, downsample_time, downsample_signal, sample_freq) = lowpass.runDownsample(integerDownsampleFactor);
-#(time,signal,filtered_signal,num_samples,sample_duration,sample_freq) = lowpass.runLowpass(integerDownsampleFactor,filterOrder);
+#Run lowpass filter and downsample 
+
+(time, signal, downsample_time, downsample_signal, sample_freq) = lowpass.runLowpassAndDownsample(integerDownsampleFactor);
 
 channelNumber = 50;
 startTime = 0.05;
