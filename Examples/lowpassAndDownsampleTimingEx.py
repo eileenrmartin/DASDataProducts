@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import scipy.signal
 import sys
 sys.path.insert(1, '../SourceCode')
-import lowpass
+import lowpassDownsample
 from scipy.signal import iirfilter, zpk2sos, sosfilt
 import warnings
 import time
@@ -16,7 +16,7 @@ integerDownsampleFactor = 2;
 runs = 4;
 t1 = time.process_time();
 for i in range(runs):
-    (tm, signal, downsample_time, downsample_signal, sample_freq) = lowpass.runLowpassAndDownsample(integerDownsampleFactor);
+    (tm, signal, downsample_time, downsample_signal, sample_freq) = lowpassDownsample.runLowpassAndDownsample(integerDownsampleFactor);
 t2 = time.process_time();
 var.write("Average time of runLowpassAndDownsample(integerDownsampleFactor) with integer downsample factor of " + str(integerDownsampleFactor) + " and number of runs equal to " + str(runs) + "\n");
 avg = (t2-t1)/runs;
@@ -27,7 +27,7 @@ integerDownsampleFactor = 4;
 runs = 4;
 t1 = time.process_time();
 for i in range(runs):
-    (tm, signal, downsample_time, downsample_signal, sample_freq) = lowpass.runLowpassAndDownsample(integerDownsampleFactor);
+    (tm, signal, downsample_time, downsample_signal, sample_freq) = lowpassDownsample.runLowpassAndDownsample(integerDownsampleFactor);
 t2 = time.process_time();
 var.write("Average time of runLowpassAndDownsample(integerDownsampleFactor) with integer downsample factor of " + str(integerDownsampleFactor) + " and number of runs equal to " + str(runs) + "\n");
 avg = (t2-t1)/runs;
@@ -38,7 +38,7 @@ integerDownsampleFactor = 6;
 runs = 4;
 t1 = time.process_time();
 for i in range(runs):
-    (tm, signal, downsample_time, downsample_signal, sample_freq) = lowpass.runLowpassAndDownsample(integerDownsampleFactor);
+    (tm, signal, downsample_time, downsample_signal, sample_freq) = lowpassDownsample.runLowpassAndDownsample(integerDownsampleFactor);
 t2 = time.process_time();
 var.write("Average time of runLowpassAndDownsample(integerDownsampleFactor) with integer downsample factor of " + str(integerDownsampleFactor) + " and number of runs equal to " + str(runs) + "\n");
 avg = (t2-t1)/runs;
@@ -49,7 +49,7 @@ integerDownsampleFactor = 8;
 runs = 4;
 t1 = time.process_time();
 for i in range(runs):
-    (tm, signal, downsample_time, downsample_signal, sample_freq) = lowpass.runLowpassAndDownsample(integerDownsampleFactor);
+    (tm, signal, downsample_time, downsample_signal, sample_freq) = lowpassDownsample.runLowpassAndDownsample(integerDownsampleFactor);
 t2 = time.process_time();
 var.write("Average time of runLowpassAndDownsample(integerDownsampleFactor) with integer downsample factor of " + str(integerDownsampleFactor) + " and number of runs equal to " + str(runs) + "\n");
 avg = (t2-t1)/runs;

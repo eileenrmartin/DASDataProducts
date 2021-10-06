@@ -8,6 +8,7 @@ import warnings
 from scipy.fft import rfft, rfftfreq
 import sys
 import time
+import h5py
 plt.switch_backend('agg')
 
 
@@ -46,17 +47,41 @@ def runLowpassAndDownsample(integerDownsampleFactor):
     downsampled_time = np.linspace(0,sampling_duration,newNumSamples, endpoint=False);
     return (time,data_T,downsampled_time, downsampled_signal,sampling_freq)
 
-def plotAmplitudeSpectrum(signal,downsampledSignal,channelNumber,signalFreq):
-    signal = np.transpose(signal);
-    downsampledSignal = np.transpose(downsampledSignal);
+def runLowpassAndDownsampleWithFile(integerDownsampleFactor, fileName):
+    f = h5py.File(fileName, 'r')
+    #print list of attributes/metadata
+    #print(f.attrs.keys())
+    #print(f.keys())
+    group = f['data_product']
+    data = group['data'][()]
+    #print(data.shape)
+    dT = f.attrs['dt_computer']
+    #print(dT)
+    number_of_time_samples = f.attrs['nt']
+    #print(nT)
+    sampling_freq = 1/dT;
+    downsampled_sampling_freq = sampling_freq/integerDownsampleFactor
+    #print(sampling_freq)
+    data_T = np.transpose(data)
+    sampling_duration = number_of_time_samples * dT;
+    time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False);
+    downsampled_signal = scipy.signal.decimate(data_T,integerDownsampleFactor);
+    newNumSamples = len(downsampled_signal[0]);
+    downsampled_time = np.linspace(0,sampling_duration,newNumSamples, endpoint=False);
+    return (time,data,downsampled_time, downsampled_signal,sampling_freq,downsampled_sampling_freq)
+    
+    
 
+def plotAmplitudeSpectrum(signal,downsampledSignal,channelNumber,signalFreq,downsampledFreq):
+    #signal = np.transpose(signal);
+    #downsampledSignal = np.transpose(downsampledSignal);
     plt.magnitude_spectrum(signal[:,channelNumber],Fs=signalFreq)
     plt.savefig('figures/ampSpectrum.png')
     plt.xlabel("Frequency (Hz)");
     plt.ylabel("Amplitude");
     plt.close()
 
-    plt.magnitude_spectrum(downsampledSignal[:,channelNumber],Fs=signalFreq)
+    plt.magnitude_spectrum(downsampledSignal[:,channelNumber],Fs=downsampledFreq)
     plt.savefig('figures/ampSpectrumDownsampled.png')
     plt.xlabel("Frequency (Hz)");
     plt.ylabel("Amplitude");
@@ -68,7 +93,7 @@ def plotAmplitudeSpectrum(signal,downsampledSignal,channelNumber,signalFreq):
     plt.ylabel("Log(Amplitude)");
     plt.close()
 
-    plt.magnitude_spectrum(downsampledSignal[:,channelNumber],Fs=signalFreq, scale='dB')
+    plt.magnitude_spectrum(downsampledSignal[:,channelNumber],Fs=downsampledFreq, scale='dB')
     plt.savefig('figures/logAmpSpectrumDownsampled.png')
     plt.xlabel("Frequency (Hz)");
     plt.ylabel("Log(Amplitude)");
@@ -86,7 +111,8 @@ def plotLowpass(time,signal,downsampleTime,downsampledSignal,channelNumber,start
     first_d = min(min(temp));
     temp = np.where(downsampleTime <= endTime);
     last_d = max(max(temp));
-
+    
+    
     fig = plt.figure(figsize=(10,10));
     plt.plot(time[first:last], signal[first:last,channelNumber], 'b-', label='signal')
     plt.plot(downsampleTime[first_d:last_d], downsampledSignal[first_d:last_d, channelNumber], 'r-', label='downsampled signal')
