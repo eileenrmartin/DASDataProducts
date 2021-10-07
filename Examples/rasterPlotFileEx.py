@@ -7,8 +7,6 @@ import lowpassDownsample
 from scipy.signal import iirfilter, zpk2sos, sosfilt
 import warnings
 import time
-import seaborn as sns
-from datashader import transfer_functions as tf, reductions as rd
 
 plt.switch_backend('agg')
 
@@ -22,9 +20,11 @@ def main(argv):
 	#img = plt.imshow(downsample_signal, aspect='auto',interpolation='none');
 	#plt.ylabel('Amp')
 	#plt.xlabel('Time')
-	img = ds.tf.shade(signal, cmap=fire, how='linear')
-export_image(img, "out", background="black", export_path="figures/")
-
+	#img = ds.tf.shade(signal, cmap=fire, how='linear')
+#export_image(img, "out", background="black", export_path="figures/")
+	plt.imshow(signal,aspect='auto',interpolation='nearest',vmin=-1*np.percentile(signal,99),vmax=np.percentile(signal,99),cmap='seismic');
+	plt.colorbar()
+	plt.savefig('figures/rasterPlot.png');
 if __name__ == "__main__":
 	main(sys.argv[1:])
 

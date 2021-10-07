@@ -12,11 +12,11 @@ plt.switch_backend('agg')
 
 def main(argv):
 	fileName = argv[0]
-	integerDownsampleFactor = 10;
+	integerDownsampleFactor = 8;
 	#Run lowpass filter and downsample 
 
 	(time, signal, downsample_time, downsample_signal, sample_freq, downsampled_sample_freq) = lowpassDownsample.runLowpassAndDownsampleWithFile(integerDownsampleFactor,fileName);
-	channelNumber = 25;
+	channelNumber = 60;
 	startTime = 3.00;
 	endTime = 11.0;
 
