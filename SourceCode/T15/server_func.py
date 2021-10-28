@@ -176,6 +176,39 @@ def save_file(filename):
     lpds.create_dataset('lowpass_filter', data=lowpassData)
     lpds.create_dataset('lowpass_and_downsample', data=downsampled_signal)
     
+    channelNumber = 10
+    startTime = 1
+    endTime = 2
+    
+    import matplotlib.pyplot as plt
+
+    data_T = np.transpose(data_T)
+    
+    temp = np.where(time_ser >= startTime);
+    first = min(min(temp));
+    temp = np.where(time_ser <= endTime);
+    last = max(max(temp));
+    
+    temp = np.where(downsampled_time >= startTime);
+    first_d = min(min(temp));
+    temp = np.where(downsampled_time <= endTime);
+    last_d = max(max(temp));
+    
+    print(time_ser.shape)
+    print(data_T.shape)
+    print(downsampled_time.shape)
+    print(downsampled_signal.shape)
+    
+    
+    fig = plt.figure(figsize=(10,10));
+    #plt.plot(time_ser[first:last], data_T[first:last,channelNumber], 'b-', label='signal')
+    plt.plot(downsampled_time, downsampled_signal[:,channelNumber], 'r-', label='downsampled signal')
+    plt.xlabel("Time (s)");
+    plt.ylabel("Amplitude");
+    plt.legend();
+    plt.savefig('../../writeup/lowpassFigure.png')
+    plt.close()
+    
     #save metadata
     hf.attrs['first_sample_time'] = beg_time                    #time of fetching data
     hf.attrs['time_window_size'] = time_window * dt             #length of time window in seconds
