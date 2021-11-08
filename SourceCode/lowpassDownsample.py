@@ -10,6 +10,7 @@ import sys
 import time
 import h5py
 plt.switch_backend('agg')
+
 def fetchT15LocalServerData():
     client = server_func.setup_server();
     data, md = server_func.get_data(client,1);
@@ -19,14 +20,6 @@ def fetchT15LocalServerData():
     sampling_duration = number_time_samples * dT;
     return (np.transpose(data), sampling_duration, number_time_samples,sampling_freq)  
 
-def runLpAndDs(data, dT, sampling_freq, number_of_time_samples, integerDownsampleFactor):
-    data_T = np.transpose(data);
-    sampling_duration = number_of_time_samples * dT;
-    time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False);
-    downsampled_signal = scipy.signal.decimate(data,integerDownsampleFactor);
-    newNumSamples = len(downsampled_signal[0]);
-    downsampled_time = np.linspace(0,sampling_duration,newNumSamples, endpoint=False);
-    return (time,data_T,downsampled_time, downsampled_signal,sampling_freq)
 def getFileData(fileName):
     f = h5py.File(fileName, 'r');
     group = f['data_product'];
@@ -36,6 +29,15 @@ def getFileData(fileName):
     number_time_samples = f.attrs['nt'];
     sampling_duration = number_time_samples * dT;
     return (data, sampling_duration, number_time_samples,sampling_freq)  
+
+def runLpAndDs(data, dT, sampling_freq, number_of_time_samples, integerDownsampleFactor):
+    data_T = np.transpose(data);
+    sampling_duration = number_of_time_samples * dT;
+    time = np.linspace(0, sampling_duration, number_of_time_samples, endpoint=False);
+    downsampled_signal = scipy.signal.decimate(data,integerDownsampleFactor);
+    newNumSamples = len(downsampled_signal[0]);
+    downsampled_time = np.linspace(0,sampling_duration,newNumSamples, endpoint=False);
+    return (time,data_T,downsampled_time, downsampled_signal,sampling_freq)
 
 def runLowpassAndDownsample(data, sampling_duration, number_time_samples, sampling_freq, integerDownsampleFactor):
     downsampled_sampling_freq = sampling_freq/integerDownsampleFactor
@@ -77,6 +79,7 @@ def plotAmplitudeSpectrum(signal,downsampledSignal,channelNumber,signalFreq,down
     plt.xlabel("Frequency (Hz)");
     plt.ylabel("Log(Amplitude)");
     plt.close()
+
 def plotLowpassDownsample(time,signal,downsampleTime,downsampledSignal,channelNumber,startTime,endTime):
     temp = np.where(time >= startTime);
     first = min(min(temp));
