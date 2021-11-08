@@ -56,9 +56,9 @@ def runLowpassAndDownsample(data, sampling_duration, number_time_samples, sampli
     time = np.linspace(0, sampling_duration, number_time_samples, endpoint=False);
     data_T = np.transpose(data);
     #print(data_T.shape, file = sys.stderr);
-    n = len(data_T[0])
-    window = scipy.signal.cosine(n)
-    data_T *= window
+    #n = len(data_T[0])
+    #window = scipy.signal.cosine(n)
+    #data_T *= window
     downsampled_signal = scipy.signal.decimate(data_T,integerDownsampleFactor);
     newNumSamples = len(downsampled_signal[0]);
     downsampled_time = np.linspace(0,sampling_duration,newNumSamples, endpoint=False);
@@ -109,6 +109,9 @@ def plotLowpassDownsample(time,signal,downsampleTime,downsampledSignal,channelNu
     fig = plt.figure(figsize=(10,10));
     plt.plot(time[first:last], signal[first:last,channelNumber], 'b-', label='signal')
     plt.plot(downsampleTime[first_d:last_d], downsampledSignal[first_d:last_d, channelNumber], 'r-', label='downsampled signal')
+    
+    #plt.plot(time, signal[:,channelNumber], 'b-', label='signal')
+    #plt.plot(downsampleTime, downsampledSignal[:, channelNumber], 'r-', label='downsampled signal')
     plt.xlabel("Time (s)");
     plt.ylabel("Amplitude");
     plt.legend();
