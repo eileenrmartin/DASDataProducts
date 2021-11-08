@@ -18,6 +18,7 @@ import numpy as np
 import math
 import time
 import h5py
+import lowpassDownsample
 
 
 def setup_server():
@@ -32,7 +33,7 @@ def setup_server():
     
     client = acq_client.acq_Client()
     client.connect_to_server("tcp://localhost:50000")
-    
+
     return client
 
 def get_data(client, n_frames):
@@ -82,6 +83,8 @@ def save_file(filename):
     ch_group_size = module.ch_group_size
     min_data = module.min_data
     file_path = module.file_path
+    integerDownsampleFactor = module.downsamp_factor
+    filterOrder = module.filterOrder
     
     #set up connection to server
     client = setup_server()
@@ -113,8 +116,8 @@ def save_file(filename):
     output, md = get_data(client, n_frames)
 
     #number of time samples in fetched data
-    num_time_samples = output.shape[0]
-
+    num_time_samples = output.shape[0] 
+    
     #calculate number of time windows
     num_time_windows = condenser.calc_num_time_win(num_time_samples, time_window)
     
@@ -140,6 +143,12 @@ def save_file(filename):
     stds_t = condenser.std_dev_time(output)
     maxs_t = condenser.max_time(output)
     
+    #lowpass filter on data
+    (time_ser, data_T, lowpassData,number_of_time_samples,sampling_duration,sampling_freq) = lowpassDownsample.runLp(integerDownsampleFactor, filterOrder, dt, output, num_time_samples)
+    
+    #lowpass and downsample
+    (time_ser,data_T,downsampled_time, downsampled_signal,sampling_freq) = lowpassDownsample.runLpAndDs(output, dt, samp_rate, num_time_samples, integerDownsampleFactor)
+    
     #save as hdf5 file
     
     #create filename using path to save file and time at fetching data
@@ -161,6 +170,44 @@ def save_file(filename):
     time_g.create_dataset('std_deviations',data=stds_t)
     time_g.create_dataset('means',data=means_t)
     time_g.create_dataset('maximums',data=maxs_t)
+    
+    #save lowpass and downsample data
+    lpds = hf.create_group('lowpass_downsample_signals')
+    lpds.create_dataset('lowpass_filter', data=lowpassData)
+    lpds.create_dataset('lowpass_and_downsample', data=downsampled_signal)
+    
+    channelNumber = 10
+    startTime = 1
+    endTime = 2
+    
+    import matplotlib.pyplot as plt
+
+    data_T = np.transpose(data_T)
+    
+    temp = np.where(time_ser >= startTime);
+    first = min(min(temp));
+    temp = np.where(time_ser <= endTime);
+    last = max(max(temp));
+    
+    temp = np.where(downsampled_time >= startTime);
+    first_d = min(min(temp));
+    temp = np.where(downsampled_time <= endTime);
+    last_d = max(max(temp));
+    
+    print(time_ser.shape)
+    print(data_T.shape)
+    print(downsampled_time.shape)
+    print(downsampled_signal.shape)
+    
+    
+    fig = plt.figure(figsize=(10,10));
+    #plt.plot(time_ser[first:last], data_T[first:last,channelNumber], 'b-', label='signal')
+    plt.plot(downsampled_time, downsampled_signal[:,channelNumber], 'r-', label='downsampled signal')
+    plt.xlabel("Time (s)");
+    plt.ylabel("Amplitude");
+    plt.legend();
+    plt.savefig('../../writeup/lowpassFigure.png')
+    plt.close()
     
     #save metadata
     hf.attrs['first_sample_time'] = beg_time                    #time of fetching data

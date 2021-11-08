@@ -9,6 +9,7 @@ and calculate and store data products in a file.
 
 from T15 import server_func
 import sys
+import lowpassDownsample
 
 if __name__ == '__main__':
     print("Fetch data from server attempt")
