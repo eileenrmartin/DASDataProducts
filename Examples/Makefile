@@ -2,7 +2,8 @@ runTiming:
 	python3 lowpassAndDownsampleTimingEx.py
 runFileEx:	
 	rm -f figures/lowpassFigure.png
-	rm -f figures/lowpassFigureDownsampled.png
+	rm -f figures/downsampleFigure.png
+	rm -f figures/lowpassAndDownsampleFigure.png
 	rm -f figures/ampSpectrum.png
 	rm -f figures/ampSpectrumDownsampled.png
 	rm -f figures/logAmpSpectrum.png
