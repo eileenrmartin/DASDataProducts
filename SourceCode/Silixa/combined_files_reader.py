@@ -1,4 +1,7 @@
-#ADD DOCUMENTATION COMMENTS AND EXPLANATIONS
+""" 
+Reads files of compiled data products created by combine_tdms_files.py and gives example plots. 
+
+"""
 
 
 import numpy as np
