@@ -84,7 +84,6 @@ def save_file(filename):
     min_data = module.min_data
     file_path = module.file_path
     integerDownsampleFactor = module.downsamp_factor
-    filterOrder = module.filterOrder
     
     #set up connection to server
     client = setup_server()
@@ -143,11 +142,10 @@ def save_file(filename):
     stds_t = condenser.std_dev_time(output)
     maxs_t = condenser.max_time(output)
     
-    #lowpass filter on data
-    (time_ser, data_T, lowpassData,number_of_time_samples,sampling_duration,sampling_freq) = lowpassDownsample.runLp(integerDownsampleFactor, filterOrder, dt, output, num_time_samples)
+    sampling_duration = num_time_samples * dt
     
     #lowpass and downsample
-    (time_ser,data_T,downsampled_time, downsampled_signal,sampling_freq) = lowpassDownsample.runLpAndDs(output, dt, samp_rate, num_time_samples, integerDownsampleFactor)
+    (time_ser,data,downsampled_time, downsampled_signal,sampling_freq,downsampled_sampling_freq) = lowpassDownsample.runLowpassAndDownsample(output, sampling_duration, num_time_samples, samp_rate, integerDownsampleFactor)
     
     #save as hdf5 file
     
@@ -173,50 +171,10 @@ def save_file(filename):
     
     #save lowpass and downsample data
     lpds = hf.create_group('lowpass_downsample_signals')
-    lpds.create_dataset('lowpass_filter', data=lowpassData)
+    lpds.create_dataset('downsample_time', data=downsampled_time)
     lpds.create_dataset('lowpass_and_downsample', data=downsampled_signal)
+    lpds.create_dataset('downsampled_sampling_freq', data=downsampled_sampling_freq)
     
-    channelNumber = 10
-    startTime = 1
-<<<<<<< HEAD
-    endTime = 100
-=======
-    endTime = 2
->>>>>>> 25db3e893215578312a70e7f9d6ee56d66f17c02
-    
-    import matplotlib.pyplot as plt
-
-    data_T = np.transpose(data_T)
-    
-    temp = np.where(time_ser >= startTime);
-    first = min(min(temp));
-    temp = np.where(time_ser <= endTime);
-    last = max(max(temp));
-    
-    temp = np.where(downsampled_time >= startTime);
-    first_d = min(min(temp));
-    temp = np.where(downsampled_time <= endTime);
-    last_d = max(max(temp));
-    
-<<<<<<< HEAD
-    print(num_time_samples)
-    print(n_channels)
-=======
->>>>>>> 25db3e893215578312a70e7f9d6ee56d66f17c02
-    print(time_ser.shape)
-    print(data_T.shape)
-    print(downsampled_time.shape)
-    print(downsampled_signal.shape)
-    
-    
-    fig = plt.figure(figsize=(10,10));
-    #plt.plot(time_ser[first:last], data_T[first:last,channelNumber], 'b-', label='signal')
-    plt.plot(downsampled_time, downsampled_signal[:,channelNumber], 'r-', label='downsampled signal')
-    plt.xlabel("Time (s)");
-    plt.ylabel("Amplitude");
-    plt.legend();
-    plt.savefig('../../writeup/lowpassFigure.png')
-    plt.close()
     
     #save metadata
     hf.attrs['first_sample_time'] = beg_time                    #time of fetching data

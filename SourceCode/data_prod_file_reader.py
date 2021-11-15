@@ -1,9 +1,19 @@
+""" Data Products Files Reader
+
+This script takes in the files of saved data products created by the 'save_data_prod.py' script and 
+shows how to fetch the data and examples of how they can be plotted.
+
+"""
+
 import sys
 import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
+    #path to save files to
+    path = '../../writeup/'
+
     #get name of file to read from command line
     filename = sys.argv[1]
     
@@ -35,14 +45,16 @@ if __name__ == '__main__':
     spect = f['spectral_tensor']
     
     #example plot of slice at one time window 
-    clip = np.percentile(np.absolute(spect[0,:,:]),95)
+    clip = np.percentile(np.absolute(spect[0,:,:]),99.5)
     fig1 = plt.figure()
     img1 = plt.imshow(spect[0,:,:], aspect='auto', extent=(0, nyq_freq, n_ch_groups, 0), vmin=0, vmax=clip)
     plt.colorbar()
     plt.title('Spectral tensor : Time window 0')
     plt.ylabel('Channel group')
     plt.xlabel('Freq (Hz)')
-    plt.show(block=False)
+    plt.savefig(path + 'file_tw0.png')
+    
+    
     
     #get time domain statistics 
     time_stats = f['time_domain_stats']
@@ -59,7 +71,23 @@ if __name__ == '__main__':
     plt.title('Channel means (time)')
     plt.ylabel('Mean Intensity')
     plt.xlabel('Channel #')
-    plt.show(block=False)
+    plt.savefig(path + 'file_meanst.png')
+    
+    #plot std of time domain
+    fig2 = plt.figure()
+    img2 = plt.plot(std_devs_t[:])
+    plt.title('Channel std deviation (time)')
+    plt.ylabel('Intensity')
+    plt.xlabel('Channel #')
+    plt.savefig(path + 'file_stdt.png')
+    
+    #plot maxs of time domain
+    fig2 = plt.figure()
+    img2 = plt.plot(maxs_t[:])
+    plt.title('Channel maximums (time)')
+    plt.ylabel('Intensity')
+    plt.xlabel('Channel #')
+    plt.savefig(path + 'file_maxt.png')
     
     #get freq domain statistics
     freq_stats = f['frequency_domain_stats']
@@ -76,5 +104,41 @@ if __name__ == '__main__':
     plt.title('Channel means (freq)')
     plt.ylabel('Mean Intensity')
     plt.xlabel('Channel #')
-    plt.show(block=True)
+    plt.savefig(path + 'file_meansf.png')
+
+    #plot std of freq domain
+    fig2 = plt.figure()
+    img2 = plt.imshow(std_devs_f[:], aspect='auto')
+    plt.title('Channel std deviation (freq)')
+    plt.colorbar()
+    plt.ylabel('Time window')
+    plt.xlabel('Channel group')
+    plt.savefig(path + 'file_stdf.png')
+    
+    #plot maxs of freq domain
+    fig2 = plt.figure()
+    img2 = plt.plot(maxs_f[:])
+    plt.title('Channel maximums (freq)')
+    plt.ylabel('Intensity')
+    plt.xlabel('Channel #')
+    plt.savefig(path + 'file_maxf.png')
+    
+    #peak freq
+    print(peak_freq[()])
+    
+    
+    #get lowpass and downsample data
+    lpds = f['lowpass_downsample_signals']
+    downsamp_time = lpds['downsample_time']
+    downsamp_signal = lpds['lowpass_and_downsample']
+    downsamp_freq = lpds['downsampled_sampling_freq']
+    
+    fig = plt.figure(figsize=(10,10))
+    plt.plot(downsamp_time, downsamp_signal[channelNumber,:], 'r-', label='downsampled signal')
+    plt.xlabel("Time (s)")
+    plt.ylabel("Amplitude")
+    plt.legend()
+    plt.savefig(path + 'lowpassAndDownsampleFigure.png')
+    plt.close()
+    
     

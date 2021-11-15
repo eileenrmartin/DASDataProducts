@@ -46,7 +46,7 @@ def runLowpassAndDownsample(data, sampling_duration, number_time_samples, sampli
     #print(data_T.shape, file = sys.stderr);
     n = len(data_T[0])
     window = scipy.signal.cosine(n)
-    data_T *= window
+    data_T = data_T * window
     downsampled_signal = scipy.signal.decimate(data_T,integerDownsampleFactor,ftype="iir");
     #downsampled_signal = scipy.signal.decimate(downsampled_signal1,integerDownsampleFactor,ftype="iir");
     newNumSamples = len(downsampled_signal[0]);
