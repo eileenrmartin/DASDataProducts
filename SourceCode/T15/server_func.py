@@ -144,8 +144,11 @@ def save_file(filename):
     
     sampling_duration = num_time_samples * dt
     
+    #shift data down by subtracting mean of each channel from each time sample for that channel so cos taper works
+    shift_data = output - means_t
+    
     #lowpass and downsample
-    (time_ser,data,downsampled_time, downsampled_signal,sampling_freq,downsampled_sampling_freq) = lowpassDownsample.runLowpassAndDownsample(output, sampling_duration, num_time_samples, samp_rate, integerDownsampleFactor)
+    (time_ser,data,downsampled_time, downsampled_signal,sampling_freq,downsampled_sampling_freq) = lowpassDownsample.runLowpassAndDownsample(shift_data, sampling_duration, num_time_samples, samp_rate, integerDownsampleFactor)
     
     #save as hdf5 file
     
