@@ -133,6 +133,8 @@ if __name__ == '__main__':
     downsamp_signal = lpds['lowpass_and_downsample']
     downsamp_freq = lpds['downsampled_sampling_freq']
     
+    channelNumber = 10
+    
     fig = plt.figure(figsize=(10,10))
     plt.plot(downsamp_time, downsamp_signal[channelNumber,:], 'r-', label='downsampled signal')
     plt.xlabel("Time (s)")
