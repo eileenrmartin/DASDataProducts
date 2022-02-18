@@ -13,6 +13,10 @@ ch_ind_array - Create the channel info array
 tw_ind_array - Create the time info array
 freq_ind_array - Create the frequency info array
 combine_data_products - Create big tensor and stat arrays
+
+Author(s)
+---------
+Samantha Paulus
 """
 
 import sys
