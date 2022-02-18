@@ -10,6 +10,11 @@ Functions
 setup_server - sets up connection to the local server
 get_data - fetches a number of frames from data stream
 save_file - Calculates data products and saves to file
+
+Author(s)
+---------
+Samantha Paulus
+Brandon Pearl
 """
 
 from acq_common import acq_client
