@@ -5,6 +5,9 @@
 This script is meant to be called repeatedly to continuously fetch data from a treble server 
 and calculate and store data products in a file. 
 
+Author(s)
+---------
+Samantha Paulus
 """
 
 from T15 import server_func
