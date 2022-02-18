@@ -9,6 +9,9 @@ Functions
 ---------
 main - Main function to create bigger tensor and indices arrays and save to file
 
+Author(s)
+---------
+Samantha Paulus
 """
 import sys
 sys.path.insert(1, '..')
