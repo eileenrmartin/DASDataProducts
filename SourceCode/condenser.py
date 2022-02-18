@@ -19,6 +19,10 @@ mean_time - Calculate the mean of each channel in time domain
 std_dev_time - Calculate the std deviation of each channel in time domain
 max_time - Calculate the max value of each channel in time domain
 condmatrix - Create spectral tensor and calculate descriptive statistics
+
+Author(s)
+---------
+Samantha Paulus
 """
 
 import numpy as np
