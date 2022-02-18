@@ -1,3 +1,21 @@
+""" Lowpass and Downsampling
+This module takes 2D original DAS data of time samples by channels and applies a lowpass frequency filter and downsamples the data by the factor
+in the param.py file. The data can also be plotted using the given function. 
+
+Functions
+---------
+fetchT15LocalServerData - fetch a frame of data from the connected server and determine the attributes
+getFileData - get the attributes from a given file of saved data
+runLpAndDs - run lowpass and downsample without applying a window taper (old version)
+runLowpassAndDownsample - run lowpass and downsample and apply a cosine window taper (new version)
+plotAmplitudeSpectrum - plot the amplitude spectrums of the original and downsampled data
+plotLowpassDownsample - plot the original and downsampled signals together (optionally between a given time frame)
+
+Author(s)
+---------
+Brandon Pearl
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
