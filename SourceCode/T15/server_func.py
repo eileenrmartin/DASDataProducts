@@ -17,7 +17,10 @@ Samantha Paulus
 Brandon Pearl
 """
 
-from acq_common import acq_client
+#from old Terra15 Treble (v3)
+#from acq_common import acq_client
+#new Treble (v4)
+from treble import acq_client
 import condenser
 import numpy as np
 import math
@@ -154,6 +157,10 @@ def save_file(filename):
     
     #lowpass and downsample
     (time_ser,data,downsampled_time, downsampled_signal,sampling_freq,downsampled_sampling_freq) = lowpassDownsample.runLowpassAndDownsample(shift_data, sampling_duration, num_time_samples, samp_rate, integerDownsampleFactor)
+    
+    #resample over space
+    new_num_samp = math.ceil(downsampled_signal.shape[0] / 10)
+    res = scipy.signal.resample(downsampled_signal, new_num_samp, axis=0)
     
     #save as hdf5 file
     
